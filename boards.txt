@@ -154,6 +154,57 @@ t5.upload.tool.default=tyutool
 t5.monitor_port.serial.baudrate=115200
 
 # --------------------------------------------------
+#                      XH WB5E                      
+# --------------------------------------------------
+XH_WB5E.name=XH WB5E
+XH_WB5E.build.chip=t5
+XH_WB5E.build.board=XH_WB5E
+XH_WB5E.build.core=tuya_open
+XH_WB5E.build.variant=XH_WB5E
+
+XH_WB5E.menu.UploadSpeed.921600=921600
+XH_WB5E.menu.UploadSpeed.921600.upload.speed=921600
+XH_WB5E.menu.UploadSpeed.115200=115200
+XH_WB5E.menu.UploadSpeed.115200.upload.speed=115200
+XH_WB5E.menu.UploadSpeed.230400=230400
+XH_WB5E.menu.UploadSpeed.230400.upload.speed=230400
+XH_WB5E.menu.UploadSpeed.460800=460800
+XH_WB5E.menu.UploadSpeed.460800.upload.speed=460800
+XH_WB5E.menu.UploadSpeed.1500000=1500000
+XH_WB5E.menu.UploadSpeed.1500000.upload.speed=1500000
+XH_WB5E.menu.UploadSpeed.2000000=2000000
+XH_WB5E.menu.UploadSpeed.2000000.upload.speed=2000000
+
+XH_WB5E.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
+XH_WB5E.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
+XH_WB5E.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
+XH_WB5E.compiler.cmd.cpp={compiler.path}/bin/arm-none-eabi-g++
+XH_WB5E.compiler.cmd.ar={compiler.path}/bin/arm-none-eabi-ar
+XH_WB5E.compiler.cmd.ld={compiler.path}/bin/arm-none-eabi-g++
+
+XH_WB5E.vendor.path={runtime.tools.vendor-t5.path}
+XH_WB5E.compiler.flags.S=@{runtime.tools.vendor-t5.path}/flags/S_flags.txt
+XH_WB5E.compiler.flags.c=@{runtime.tools.vendor-t5.path}/flags/c_flags.txt
+XH_WB5E.compiler.flags.cpp=@{runtime.tools.vendor-t5.path}/flags/cpp_flags.txt
+XH_WB5E.compiler.flags.ar=@{runtime.tools.vendor-t5.path}/flags/ar_flags.txt
+
+XH_WB5E.appBuild.flags=@{build.path}/tuyaTmp/appConfig/appBuildDefine.txt
+
+XH_WB5E.compiler.includes.tuya_open=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tuya_open.txt
+XH_WB5E.compiler.includes.tkl=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tkl.txt
+XH_WB5E.compiler.includes.vendor=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_vendor.txt
+XH_WB5E.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
+
+XH_WB5E.compiler.flags.ld=@{runtime.tools.vendor-t5.path}/flags/ld_flags.txt
+XH_WB5E.compiler.flags.libs=-L{runtime.tools.vendor-t5.path}/libs @{runtime.tools.vendor-t5.path}/flags/libs_flags.txt
+XH_WB5E.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-t5.path}/packager-tools/t5.ld -o {build.path}/{build.project_name}.elf
+
+XH_WB5E.upload.tool=tyutool
+XH_WB5E.upload.tool.default=tyutool
+
+XH_WB5E.monitor_port.serial.baudrate=115200
+
+# --------------------------------------------------
 #                       LN882H                      
 # --------------------------------------------------
 ln882h.name=LN882H
