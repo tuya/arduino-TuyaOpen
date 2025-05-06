@@ -145,9 +145,9 @@ if __name__ == "__main__":
     t5_bi = board_info_class("t5", "t5", "", "T5", "t5", t5_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
     make_board(t5_bi)
 
-    wb5e_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
-    wb5e_bi = board_info_class("wb5e", "t5", "", "WB5E", "wb5e", wb5e_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
-    make_board(wb5e_bi)
+    XHSC_wb5e_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
+    XHSC_wb5e_bi = board_info_class("XHSC_wb5e", "t5", "XHSC_", "WB5E", "XHSC_wb5e", XHSC_wb5e_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
+    make_board(XHSC_wb5e_bi)
 
     ln882h_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
     ln882h_bi = board_info_class("ln882h", "ln882h", "", "LN882H", "ln882h", ln882h_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
