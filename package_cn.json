@@ -12,6 +12,86 @@
         {
           "name": "Tuya Open",
           "architecture": "tuya_open",
+          "version": "1.1.6",
+          "category": "Contributed",
+          "help": {
+            "online": ""
+          },
+          "url": "https://images.tuyacn.com/rms-static/5dd3bfd0-2ed7-11f0-9fb9-e1834df84344-1747016297549.zip?tyName=arduino_tuya_open-1.1.6.zip",
+          "archiveFileName": "arduino_tuya_open-1.1.6.zip",
+          "size": "230988",
+          "checksum": "SHA-256:e37dc8c2e4795cd3c6bc3e5ef1714542adb046bab8479bd41a995a44abae1e85",
+          "help": {
+            "online": ""
+          },
+          "boards": [
+            {
+              "name": "t2"
+            },
+            {
+              "name": "t3"
+            },
+            {
+              "name": "t5"
+            },
+            {
+              "name": "ln882h"
+            },
+            {
+              "name": "esp32"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "tuya_open",
+              "name": "gcc-arm-none-eabi",
+              "version": "10.3"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "xtensa-esp-elf",
+              "version": "13.2.0"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t2",
+              "version": "1.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t3",
+              "version": "0.0.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t5",
+              "version": "0.0.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-ln882h",
+              "version": "0.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-esp32",
+              "version": "0.0.1"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "env-python",
+              "version": "3.12.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "tyutool",
+              "version": "1.8.3"
+            }
+          ]
+        },
+        {
+          "name": "Tuya Open",
+          "architecture": "tuya_open",
           "version": "1.1.5",
           "category": "Contributed",
           "help": {
