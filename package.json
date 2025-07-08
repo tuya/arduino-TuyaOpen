@@ -12,6 +12,86 @@
         {
           "name": "Tuya Open",
           "architecture": "tuya_open",
+          "version": "1.1.7",
+          "category": "Contributed",
+          "help": {
+            "online": ""
+          },
+          "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.7/arduino_tuya_open-1.1.7.zip",
+          "archiveFileName": "arduino_tuya_open-1.1.7.zip",
+          "size": "230988",
+          "checksum": "SHA-256:09c6062e4a963bcf85d5e9d6c9fec9016448c073ee160142408802331b28af2a",
+          "help": {
+            "online": ""
+          },
+          "boards": [
+            {
+              "name": "t2"
+            },
+            {
+              "name": "t3"
+            },
+            {
+              "name": "t5"
+            },
+            {
+              "name": "ln882h"
+            },
+            {
+              "name": "esp32"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "tuya_open",
+              "name": "gcc-arm-none-eabi",
+              "version": "10.3"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "xtensa-esp-elf",
+              "version": "13.2.0"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t2",
+              "version": "1.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t3",
+              "version": "0.0.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t5",
+              "version": "0.0.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-ln882h",
+              "version": "0.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-esp32",
+              "version": "0.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "env-python",
+              "version": "3.12.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "tyutool",
+              "version": "1.8.3"
+            }
+          ]
+        },
+        {
+          "name": "Tuya Open",
+          "architecture": "tuya_open",
           "version": "1.1.6",
           "category": "Contributed",
           "help": {
@@ -1214,6 +1294,40 @@
               "archiveFileName": "vendor-ln882h-0.0.1.tar.bz2",
               "size": "4387925",
               "checksum": "SHA-256:91ad372330274f8e1295f40e04e9bf7ec3a1dbc22dd10fba99f330f4c95ae23e"
+            }
+          ]
+        },
+        {
+        "name": "vendor-esp32",
+          "version": "0.0.2",
+          "systems": [
+            {
+              "host": "x86_64-linux-gnu",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.7/vendor-esp32-0.0.2.tar.bz2",
+              "archiveFileName": "vendor-esp32-0.0.2.tar.bz2",
+              "size": "201912505",
+              "checksum": "SHA-256:9d86d94d2fc2deec5b3d59d75ea9c371c7e591a433c683f8ec3c1d4f55186050"
+            },
+            {
+              "host": "x86_64-cygwin",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.7/vendor-esp32-0.0.2.tar.bz2",
+              "archiveFileName": "vendor-esp32-0.0.2.tar.bz2",
+              "size": "201912505",
+              "checksum": "SHA-256:9d86d94d2fc2deec5b3d59d75ea9c371c7e591a433c683f8ec3c1d4f55186050"
+            },
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.7/vendor-esp32-0.0.2.tar.bz2",
+              "archiveFileName": "vendor-esp32-0.0.2.tar.bz2",
+              "size": "201912505",
+              "checksum": "SHA-256:9d86d94d2fc2deec5b3d59d75ea9c371c7e591a433c683f8ec3c1d4f55186050"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.7/vendor-esp32-0.0.2.tar.bz2",
+              "archiveFileName": "vendor-esp32-0.0.2.tar.bz2",
+              "size": "201912505",
+              "checksum": "SHA-256:9d86d94d2fc2deec5b3d59d75ea9c371c7e591a433c683f8ec3c1d4f55186050"
             }
           ]
         },
