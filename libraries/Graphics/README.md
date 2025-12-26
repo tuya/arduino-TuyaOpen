@@ -1,80 +1,80 @@
 # Graphics Library - Display C++ Wrapper
 
-这个库提供了一个面向对象的 C++ 接口来封装 Tuya Display Layer (TDL) 的 C 语言显示驱动。
+This library provides an object-oriented C++ interface to wrap the Tuya Display Layer (TDL) C display driver.
 
-## 功能特性
+## Features
 
-- **设备管理**: 初始化、查找和关闭显示设备
-- **显示控制**: 亮度调节、帧缓冲刷新
-- **绘图操作**: 
-  - 绘制单个像素
-  - 填充矩形区域
-  - 清屏/全屏填充
-- **颜色转换**: RGB888 ↔ RGB565 ↔ 其他像素格式
-- **设备信息查询**: 宽度、高度、像素格式
+- **Device Management**: Initialize, find, and close display devices
+- **Display Control**: Brightness adjustment, frame buffer refresh
+- **Drawing Operations**: 
+  - Draw single pixels
+  - Fill rectangular areas
+  - Clear screen / fill entire screen
+- **Color Conversion**: RGB888 ↔ RGB565 ↔ other pixel formats
+- **Device Information Query**: Width, height, pixel format
 
-## API 参考
+## API Reference
 
-### 初始化和设备管理
+### Initialization and Device Management
 
 ```cpp
-Display display;  // 创建显示对象
+Display display;  // Create display object
 
-OPERATE_RET begin();           // 初始化显示设备
-void end();                     // 关闭显示设备
-bool isInitialized() const;     // 检查是否已初始化
+OPERATE_RET begin();           // Initialize display device
+void end();                     // Close display device
+bool isInitialized() const;     // Check if initialized
 ```
 
-### 显示控制
+### Display Control
 
 ```cpp
-OPERATE_RET setBrightness(uint8_t brightness);  // 设置亮度 (0-100)
-OPERATE_RET flush();                             // 刷新帧缓冲到显示器
+OPERATE_RET setBrightness(uint8_t brightness);  // Set brightness (0-100)
+OPERATE_RET flush();                             // Flush frame buffer to display
 ```
 
-### 绘图操作
+### Drawing Operations
 
 ```cpp
-// 清除显示（默认黑色）
+// Clear display (default black)
 OPERATE_RET clear(uint32_t color = 0x000000);
 
-// 绘制单个像素
+// Draw a single pixel
 OPERATE_RET drawPixel(uint16_t x, uint16_t y, uint32_t color);
 
-// 填充矩形区域 (x0,y0) 到 (x1,y1)
+// Fill rectangular area from (x0,y0) to (x1,y1)
 OPERATE_RET fillRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t color);
 
-// 填充整个屏幕
+// Fill the entire screen
 OPERATE_RET fillScreen(uint32_t color);
 ```
 
-### 颜色转换
+### Color Conversion
 
 ```cpp
-// 转换颜色格式
+// Convert color format
 uint32_t convertColor(uint32_t color, 
                      TUYA_DISPLAY_PIXEL_FMT_E srcFmt, 
                      TUYA_DISPLAY_PIXEL_FMT_E dstFmt, 
                      uint32_t threshold = 32768);
 
-// RGB565 转换为当前显示格式
+// Convert RGB565 to current display format
 uint32_t rgb565ToColor(uint16_t rgb565, uint32_t threshold = 32768);
 
-// RGB888 (8-8-8) 转换为 RGB565 (5-6-5)
+// Convert RGB888 (8-8-8) to RGB565 (5-6-5)
 uint16_t rgb888ToRgb565(uint8_t r, uint8_t g, uint8_t b);
 ```
 
-### 信息查询
+### Information Query
 
 ```cpp
-uint16_t getWidth() const;                          // 获取显示宽度
-uint16_t getHeight() const;                         // 获取显示高度
-TUYA_DISPLAY_PIXEL_FMT_E getPixelFormat() const;   // 获取像素格式
+uint16_t getWidth() const;                          // Get display width
+uint16_t getHeight() const;                         // Get display height
+TUYA_DISPLAY_PIXEL_FMT_E getPixelFormat() const;   // Get pixel format
 ```
 
-## 使用示例
+## Usage Examples
 
-### 基本示例
+### Basic Example
 
 ```cpp
 #include "display.h"
@@ -82,95 +82,95 @@ TUYA_DISPLAY_PIXEL_FMT_E getPixelFormat() const;   // 获取像素格式
 Display display;
 
 void setup() {
-    // 初始化显示
+    // Initialize display
     if (display.begin() != OPRT_OK) {
         Serial.println("Failed to initialize display");
         return;
     }
     
-    // 清除屏幕（黑色）
+    // Clear screen (black)
     display.clear(0x000000);
     display.flush();
 }
 
 void loop() {
-    // 填充屏幕为红色
+    // Fill screen with red
     display.fillScreen(0xFF0000);
     display.flush();
     delay(1000);
     
-    // 填充屏幕为绿色
+    // Fill screen with green
     display.fillScreen(0x00FF00);
     display.flush();
     delay(1000);
     
-    // 填充屏幕为蓝色
+    // Fill screen with blue
     display.fillScreen(0x0000FF);
     display.flush();
     delay(1000);
 }
 ```
 
-### 绘制图形
+### Drawing Shapes
 
 ```cpp
 void setup() {
     display.begin();
     display.clear(0x000000);
     
-    // 绘制三个彩色矩形
-    display.fillRect(10, 10, 50, 50, 0xFF0000);   // 红色
-    display.fillRect(60, 10, 100, 50, 0x00FF00);  // 绿色
-    display.fillRect(110, 10, 150, 50, 0x0000FF); // 蓝色
+    // Draw three colored rectangles
+    display.fillRect(10, 10, 50, 50, 0xFF0000);   // Red
+    display.fillRect(60, 10, 100, 50, 0x00FF00);  // Green
+    display.fillRect(110, 10, 150, 50, 0x0000FF); // Blue
     
     display.flush();
 }
 ```
 
-### 像素级绘图
+### Pixel-Level Drawing
 
 ```cpp
 void setup() {
     display.begin();
     display.clear(0x000000);
     
-    // 绘制对角线
+    // Draw a diagonal line
     uint16_t width = display.getWidth();
     uint16_t height = display.getHeight();
     
     for (int i = 0; i < min(width, height); i++) {
-        display.drawPixel(i, i, 0xFFFFFF);  // 白色像素
+        display.drawPixel(i, i, 0xFFFFFF);  // White pixel
     }
     
     display.flush();
 }
 ```
 
-### 颜色转换
+### Color Conversion
 
 ```cpp
 void setup() {
     display.begin();
     
-    // 使用 RGB888 创建颜色
+    // Create color using RGB888
     uint8_t r = 255, g = 128, b = 64;
     uint16_t rgb565 = display.rgb888ToRgb565(r, g, b);
     
-    // 转换为显示格式
+    // Convert to display format
     uint32_t displayColor = display.rgb565ToColor(rgb565);
     
-    // 填充屏幕
+    // Fill screen
     display.fillScreen(displayColor);
     display.flush();
 }
 ```
 
-## 底层 TDL 接口映射
+## Underlying TDL Interface Mapping
 
-Display 类封装了以下 TDL C 接口：
+The Display class wraps the following TDL C interfaces:
 
-| Display 方法 | TDL 接口 |
-|-------------|---------|
+| Display Method | TDL Interface |
+|----------------|---------------|
 | `begin()` | `tdl_disp_find_dev()`, `tdl_disp_dev_open()`, `tdl_disp_create_frame_buff()` |
 | `end()` | `tdl_disp_dev_close()`, `tdl_disp_free_frame_buff()` |
 | `setBrightness()` | `tdl_disp_set_brightness()` |
@@ -181,37 +181,37 @@ Display 类封装了以下 TDL C 接口：
 | `convertColor()` | `tdl_disp_convert_color_fmt()` |
 | `rgb565ToColor()` | `tdl_disp_convert_rgb565_to_color()` |
 
-## 支持的显示类型
+## Supported Display Types
 
-根据板载配置自动支持：
-- **ILI9488** - RGB 接口 LCD (TUYA_T5AI_BOARD_EX_MODULE_35565LCD)
-- **ST7735S** - SPI 接口 LCD (TUYA_T5AI_BOARD_EX_MODULE_EYES)
-- **ST7305** - E-Ink 显示 (TUYA_T5AI_BOARD_EX_MODULE_29E_INK)
-- **SSD1306** - OLED 显示 (TUYA_T5AI_BOARD_EX_MODULE_096_OLED)
+Automatically supported based on board configuration:
+- **ILI9488** - RGB interface LCD (TUYA_T5AI_BOARD_EX_MODULE_35565LCD)
+- **ST7735S** - SPI interface LCD (TUYA_T5AI_BOARD_EX_MODULE_EYES)
+- **ST7305** - E-Ink display (TUYA_T5AI_BOARD_EX_MODULE_29E_INK)
+- **SSD1306** - OLED display (TUYA_T5AI_BOARD_EX_MODULE_096_OLED)
 
-## 注意事项
+## Notes
 
-1. **DISPLAY_NAME 宏**: 必须在编译时定义，指定要使用的显示设备名称
-2. **内存分配**: 帧缓冲自动从 PSRAM 分配，大小根据显示分辨率和像素格式计算
-3. **颜色格式**: 颜色值根据显示的像素格式自动转换（RGB565、RGB888、单色等）
-4. **坐标系统**: 
-   - 原点 (0,0) 在左上角
-   - X 轴向右增长
-   - Y 轴向下增长
-5. **错误处理**: 所有操作返回 `OPERATE_RET`，`OPRT_OK` 表示成功
+1. **DISPLAY_NAME Macro**: Must be defined at compile time to specify the display device name to use
+2. **Memory Allocation**: Frame buffer is automatically allocated from PSRAM, size calculated based on display resolution and pixel format
+3. **Color Format**: Color values are automatically converted according to the display's pixel format (RGB565, RGB888, monochrome, etc.)
+4. **Coordinate System**: 
+   - Origin (0,0) is at the top-left corner
+   - X-axis increases to the right
+   - Y-axis increases downward
+5. **Error Handling**: All operations return `OPERATE_RET`, `OPRT_OK` indicates success
 
-## 性能提示
+## Performance Tips
 
-- 批量绘制操作后调用一次 `flush()` 而不是每次绘制后都刷新
-- 使用 `fillRect()` 比多次调用 `drawPixel()` 更高效
-- 对于大量像素操作，考虑直接操作帧缓冲（高级用法）
+- Call `flush()` once after batch drawing operations instead of refreshing after each draw
+- Using `fillRect()` is more efficient than calling `drawPixel()` multiple times
+- For intensive pixel operations, consider directly manipulating the frame buffer (advanced usage)
 
-## 错误代码
+## Error Codes
 
-| 返回值 | 含义 |
-|-------|------|
-| `OPRT_OK` | 操作成功 |
-| `OPRT_INVALID_PARM` | 无效参数（如坐标越界） |
-| `OPRT_COM_ERROR` | 设备未初始化或通信错误 |
-| `OPRT_MALLOC_FAILED` | 内存分配失败 |
-| `OPRT_NOT_SUPPORTED` | 不支持的像素格式 |
+| Return Value | Meaning |
+|--------------|---------|
+| `OPRT_OK` | Operation successful |
+| `OPRT_INVALID_PARM` | Invalid parameter (e.g., coordinates out of bounds) |
+| `OPRT_COM_ERROR` | Device not initialized or communication error |
+| `OPRT_MALLOC_FAILED` | Memory allocation failed |
+| `OPRT_NOT_SUPPORTED` | Unsupported pixel format |
