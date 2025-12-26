@@ -1,0 +1,53 @@
+#######################################
+# Syntax Coloring Map For TuyaAI
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+TuyaAI	KEYWORD1
+AI_BIZ_ATTR_INFO_T	KEYWORD1
+AI_BIZ_HEAD_INFO_T	KEYWORD1
+AI_SESSION_CFG_T	KEYWORD1
+AI_SESSION_ID	KEYWORD1
+AI_EVENT_ID	KEYWORD1
+AI_STATUS_CODE	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+isReady	KEYWORD2
+startPing	KEYWORD2
+stopPing	KEYWORD2
+createSession	KEYWORD2
+deleteSession	KEYWORD2
+sendBizPacket	KEYWORD2
+startEvent	KEYWORD2
+endEvent	KEYWORD2
+payloadsEndEvent	KEYWORD2
+chatBreakEvent	KEYWORD2
+oneShotEvent	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+AI_PT_CLIENT_HELLO	LITERAL1
+AI_PT_AUTH_REQ	LITERAL1
+AI_PT_AUTH_RESP	LITERAL1
+AI_PT_PING	LITERAL1
+AI_PT_PONG	LITERAL1
+AI_PT_CONN_CLOSE	LITERAL1
+AI_PT_SESSION_NEW	LITERAL1
+AI_PT_SESSION_CLOSE	LITERAL1
+AI_PT_CONN_REFRESH_REQ	LITERAL1
+AI_PT_CONN_REFRESH_RESP	LITERAL1
+AI_PT_VIDEO	LITERAL1
+AI_PT_AUDIO	LITERAL1
+AI_PT_IMAGE	LITERAL1
+AI_PT_FILE	LITERAL1
+AI_PT_TEXT	LITERAL1
+AI_PT_EVENT	LITERAL1

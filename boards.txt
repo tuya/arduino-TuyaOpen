@@ -142,7 +142,8 @@ t5.appBuild.flags=@{build.path}/tuyaTmp/appConfig/appBuildDefine.txt
 t5.compiler.includes.tuya_open=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tuya_open.txt
 t5.compiler.includes.tkl=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tkl.txt
 t5.compiler.includes.vendor=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_vendor.txt
-t5.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
+t5.compiler.includes.boards=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_boards.txt
+t5.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor} {compiler.includes.boards}
 
 t5.compiler.flags.ld=@{runtime.tools.vendor-t5.path}/flags/ld_flags.txt
 t5.compiler.flags.libs=-L{runtime.tools.vendor-t5.path}/libs @{runtime.tools.vendor-t5.path}/flags/libs_flags.txt
