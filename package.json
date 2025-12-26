@@ -1175,7 +1175,7 @@
         },
         {
           "name": "vendor-t5",
-          "version": "0.0.4",
+          "version": "0.0.5",
           "systems": [
             {
               "host": "x86_64-linux-gnu",
