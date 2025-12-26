@@ -2,8 +2,8 @@
 #include "TuyaIoT.h"
 #include "Log.h"
 
-#define TUYA_DEVICE_UUID "uuid66a64f11832c16c2"
-#define TUYA_DEVICE_AUTHKEY "ah0hvQi5C8D1AthHihYYOM7vjAQTuRh7"
+#define TUYA_DEVICE_UUID "uuidxxxxxxxxxxxxxxxx"
+#define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #define TUYA_PRODUCT_ID "alon7qgyjj8yus74"
 #define LED_PIN 9
 #define DPID_VOLUME 3
