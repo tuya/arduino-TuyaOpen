@@ -9,7 +9,7 @@ extern "C" {
 // Minor version number (x.X.x)
 #define VERSION_ARDUINO_TUYA_MINOR 1
 // Patch version number (x.x.X)
-#define VERSION_ARDUINO_TUYA_PATCH 6
+#define VERSION_ARDUINO_TUYA_PATCH 7
 
 // Version number (in numeric form)
 #define VERSION_ARDUINO_TUYA ((VERSION_ARDUINO_TUYA_MAJOR << 16) | (VERSION_ARDUINO_TUYA_MINOR << 8) | VERSION_ARDUINO_TUYA_PATCH)

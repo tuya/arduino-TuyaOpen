@@ -9,7 +9,7 @@
  *
  */
 #include "tuya_iot_config.h"
-
+#include "tuya_authorize.h"
 #include "ArduinoMain.h"
 
 #include "cJSON.h"
@@ -24,6 +24,20 @@
 #if defined(ENABLE_LIBLWIP) && (ENABLE_LIBLWIP == 1)
 #include "lwip_init.h"
 #endif
+
+// Provide _init and _fini functions for C++ constructor/destructor initialization
+void _init(void) __attribute__((weak));
+void _fini(void) __attribute__((weak));
+
+void _init(void)
+{
+  // Empty implementation - C++ constructors will be called by __libc_init_array
+}
+
+void _fini(void)
+{
+  // Empty implementation - C++ destructors cleanup
+}
 
 /***********************************************************
 ************************macro define************************
@@ -71,6 +85,8 @@ void app_open_sdk_init(void)
   // work queue init
   tal_workq_init();
 
+  tuya_authorize_init();
+
   // lwip init
 #if defined(ENABLE_LIBLWIP) && (ENABLE_LIBLWIP == 1)
   TUYA_LwIP_Init();
@@ -109,10 +125,10 @@ static void ArduinoThread(void *arg)
 
 void tuya_app_main(void)
 {
-#if (!defined(ARDUINO_T5) && !defined(ARDUINO_ESP32))
+#if (!defined(ARDUINO_ESP32))
   __asm("BL __libc_init_array");
 #endif
 
-  THREAD_CFG_T thrd_param = {1024 * 4, THREAD_PRIO_1, thread_name};
+  THREAD_CFG_T thrd_param = {1024 * 8, THREAD_PRIO_1, thread_name}; // Increased stack size for C++
   tal_thread_create_and_start(&arduino_thrd_hdl, NULL, NULL, ArduinoThread, NULL, &thrd_param);
 }
