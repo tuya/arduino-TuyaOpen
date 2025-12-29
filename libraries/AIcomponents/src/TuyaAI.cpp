@@ -5,7 +5,7 @@ extern "C" {
 #include "tal_api.h"
 #include "src/media/media_src_zh.h"
 #include "lang_config.h"
-#include "reset_netcfg.h"
+
 }
 
 typedef uint8_t APP_CHAT_MODE_E;
@@ -109,7 +109,6 @@ void TuyaAI::begin(AI_AUDIO_CONFIG_T ai_audio_cfg) {
     //     sg_chat_bot.work->auido_mode = ai_audio_cfg.work_mode;
     // }
     
-    reset_netconfig_start();
     ai_audio_init(&ai_audio_cfg);
 
     if (sg_chat_bot.work != NULL) {
