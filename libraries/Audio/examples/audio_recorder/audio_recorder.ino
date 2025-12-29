@@ -5,6 +5,7 @@
  * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
  */
 #include "Audio.h"
+#include "Log.h"
 /***********************************************************
 **********************Global variables**********************
 ***********************************************************/
@@ -35,7 +36,8 @@ void setup() {
     OPERATE_RET rt = OPRT_OK;
 
     // Initialize logging
-    tal_log_init(TAL_LOG_LEVEL_DEBUG, 1024, (TAL_LOG_OUTPUT_CB)tkl_log_output);
+    Serial.begin(115200);
+    Log.begin(1024);
 
     print_system_info();
 
