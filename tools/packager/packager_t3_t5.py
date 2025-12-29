@@ -35,21 +35,28 @@ t5_config_str = '''
 {
     "magic": "FreeRTOS",
     "version": "0.1",
-    "count": 2,
+    "count": 3,
     "section": [
         {
             "firmware": "bootloader.bin",
             "version": "2M.1220",
             "partition": "bootloader",
             "start_addr": "0x0",
-            "size": "64K"
+            "size": "68K"
+        },
+        {
+            "firmware": "cp_app.bin",
+            "version": "2M.1220",
+            "partition": "cp_app",
+            "start_addr": "0x00010000",
+            "size": "1244K"
         },
         {
             "firmware": "app.bin",
             "version": "2M.1220",
-            "partition": "app",
-            "start_addr": "0x10000",
-            "size": "3520K"
+            "partition": "ap_app",
+            "start_addr": "0x00130000",
+            "size": "3876K"
         }
     ]
 }
@@ -98,24 +105,58 @@ def get_qio_binary_t3_t5(chip_info):
 
     config_json = json.loads(config_str)
     config_json["section"][0]["firmware"] = bootloader_file
-    config_json["section"][1]["firmware"] = chip_info.bin_file
+    
+    # For T5: set CP core firmware (section[1]) and AP core firmware (section[2])
+    if chip_info.chip == 't5':
+        cp_app_file = os.path.join(chip_info.tools_path, 't5_cp_app.bin')
+        if not os.path.exists(cp_app_file):
+            logging.error(f"CP core app not found: {cp_app_file}")
+            logging.error("T5 requires CP core (Communication Processor) to initialize WiFi/BLE before AP core")
+            return False
+        config_json["section"][1]["firmware"] = cp_app_file
+        config_json["section"][2]["firmware"] = chip_info.bin_file
+        logging.info(f"T5 dual-core: CP={cp_app_file}, AP={chip_info.bin_file}")
+    else:
+        # T3: only 2 sections
+        config_json["section"][1]["firmware"] = chip_info.bin_file
+    
     logging.debug("config_json: " + json.dumps(config_json, indent=4))
     config_file = os.path.join(chip_info.output_path, "config.json")
     with open(config_file, 'w') as f:
         json.dump(config_json, f, indent=4)
 
     all_app_pack_file = os.path.join(chip_info.output_path, 'all_app_pack.bin')
-    gen_image_command = [
-        cmake_Gen_image_tools,
-        'genfile',
-        '-injsonfile',
-        config_file,
-        '-infile',
-        bootloader_file,
-        chip_info.bin_file,
-        '-outfile',
-        all_app_pack_file
-    ]
+    
+    # Build gen_image command based on chip type
+    if chip_info.chip == 't5':
+        # T5: 3 files (bootloader + CP core + AP core)
+        cp_app_file = os.path.join(chip_info.tools_path, 't5_cp_app.bin')
+        gen_image_command = [
+            cmake_Gen_image_tools,
+            'genfile',
+            '-injsonfile',
+            config_file,
+            '-infile',
+            bootloader_file,
+            cp_app_file,
+            chip_info.bin_file,
+            '-outfile',
+            all_app_pack_file
+        ]
+    else:
+        # T3: 2 files (bootloader + app)
+        gen_image_command = [
+            cmake_Gen_image_tools,
+            'genfile',
+            '-injsonfile',
+            config_file,
+            '-infile',
+            bootloader_file,
+            chip_info.bin_file,
+            '-outfile',
+            all_app_pack_file
+        ]
+    
     logging.debug("gen_image_command: " + ' '.join(gen_image_command))
     result = subprocess.run(gen_image_command)
     if result.returncode != 0 or not os.path.exists(all_app_pack_file):

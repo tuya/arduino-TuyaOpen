@@ -9,6 +9,9 @@ extern "C" {
 
 #include "tuya_iot_dp.h"
 #include "tal_time_service.h"
+#include "tal_cli.h"
+#include "tuya_authorize.h"
+#include "reset_netcfg.h"
 }
 
 
@@ -301,6 +304,16 @@ bool TuyaIoTCloudClass::isTimeSync(void)
   return (OPRT_OK == rt) ? (true) : (false);
 }
 
+void TuyaIoTCloudClass::uartAuthInit()
+{
+  tal_cli_init();
+  tuya_authorize_init();
+}
+
+void TuyaIoTCloudClass::resetNetcfg()
+{
+  reset_netconfig_start();
+}
 /******************************************************************************
  * PRIVATE MEMBER FUNCTIONS
  ******************************************************************************/
