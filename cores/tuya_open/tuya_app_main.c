@@ -9,7 +9,7 @@
  *
  */
 #include "tuya_iot_config.h"
-#include "tuya_authorize.h"
+
 #include "ArduinoMain.h"
 
 #include "cJSON.h"
@@ -84,8 +84,6 @@ void app_open_sdk_init(void)
   tal_sw_timer_init();
   // work queue init
   tal_workq_init();
-
-  tuya_authorize_init();
 
   // lwip init
 #if defined(ENABLE_LIBLWIP) && (ENABLE_LIBLWIP == 1)

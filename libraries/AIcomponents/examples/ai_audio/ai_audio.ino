@@ -15,8 +15,6 @@ uint8_t recv[TEXT_SIZE];
 static uint8_t _need_reset = 0;
 static uint8_t _chat_flag = 0;
 
-// static void __ai_audio_agent_event_cb(AI_EVENT_TYPE event, AI_EVENT_ID event_id);
-// static void __ai_audio_agent_msg_cb(AI_AGENT_MSG_T *msg);
 static void __app_ai_audio_state_inform_cb(AI_AUDIO_STATE_E state);
 static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg);
 void tuyaIoTEventCallback(tuya_event_msg_t *event);
@@ -51,6 +49,8 @@ void setup() {
 
   TuyaIoT.setEventCallback(tuyaIoTEventCallback);
   TuyaIoT.setLicense(TUYA_DEVICE_UUID, TUYA_DEVICE_AUTHKEY);
+  // Pressing the reset button three times can clear the network configuration information
+  TuyaIoT.resetNetcfg();
 
   // Initialize AI components
   AI_AUDIO_CONFIG_T ai_audio_cfg = {
