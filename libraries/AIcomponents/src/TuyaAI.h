@@ -1,3 +1,11 @@
+/**
+ * @file TuyaAI.h
+ * @author Tuya Inc.
+ * @brief AI audio component implementation
+ *
+ * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ *
+ */
 #ifndef __TUYA_AI_H_
 #define __TUYA_AI_H_
 

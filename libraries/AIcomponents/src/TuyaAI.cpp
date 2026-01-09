@@ -26,7 +26,6 @@ typedef struct {
     const CHAT_WORK_MODE_INFO_T *work;
 } APP_CHAT_BOT_S;
 
-// #if defined(ENABLE_CHAT_MODE_KEY_PRESS_HOLD_SINGEL) && (ENABLE_CHAT_MODE_KEY_PRESS_HOLD_SINGEL == 1)
 const static CHAT_WORK_MODE_INFO_T cAPP_WORK_HOLD = {
     .mode = APP_CHAT_MODE_KEY_PRESS_HOLD_SINGLE,
     .auido_mode = AI_AUDIO_MODE_MANUAL_SINGLE_TALK,
@@ -34,7 +33,7 @@ const static CHAT_WORK_MODE_INFO_T cAPP_WORK_HOLD = {
     .display_text = HOLD_TALK,
     .is_open = true,
 };
-// #elif defined(ENABLE_CHAT_MODE_KEY_TRIG_VAD_FREE) && (ENABLE_CHAT_MODE_KEY_TRIG_VAD_FREE == 1)
+
 const static CHAT_WORK_MODE_INFO_T cAPP_WORK_TRIG_VAD = {
     .mode = APP_CHAT_MODE_KEY_TRIG_VAD_FREE,
     .auido_mode = AI_AUDIO_WORK_VAD_FREE_TALK,
@@ -42,7 +41,7 @@ const static CHAT_WORK_MODE_INFO_T cAPP_WORK_TRIG_VAD = {
     .display_text = TRIG_TALK,
     .is_open = false,
 };
-// #elif defined(ENABLE_CHAT_MODE_ASR_WAKEUP_SINGEL) && (ENABLE_CHAT_MODE_ASR_WAKEUP_SINGEL == 1)
+
 const static CHAT_WORK_MODE_INFO_T cAPP_WORK_WAKEUP_SINGLE = {
     .mode = APP_CHAT_MODE_ASR_WAKEUP_SINGLE,
     .auido_mode = AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK,
@@ -50,7 +49,7 @@ const static CHAT_WORK_MODE_INFO_T cAPP_WORK_WAKEUP_SINGLE = {
     .display_text = WAKEUP_TALK,
     .is_open = true,
 };
-// #elif defined(ENABLE_CHAT_MODE_ASR_WAKEUP_FREE) && (ENABLE_CHAT_MODE_ASR_WAKEUP_FREE == 1)
+
 const static CHAT_WORK_MODE_INFO_T cAPP_WORK_WAKEUP_FREE = {
     .mode = APP_CHAT_MODE_ASR_WAKEUP_FREE,
     .auido_mode = AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK,
@@ -58,22 +57,10 @@ const static CHAT_WORK_MODE_INFO_T cAPP_WORK_WAKEUP_FREE = {
     .display_text = FREE_TALK,
     .is_open = true,
 };
-// #endif
-
 
 static APP_CHAT_BOT_S sg_chat_bot = {
     .is_enable = 0,
-// #if defined(ENABLE_CHAT_MODE_KEY_PRESS_HOLD_SINGEL) && (ENABLE_CHAT_MODE_KEY_PRESS_HOLD_SINGEL == 1)
-//     .work = &cAPP_WORK_HOLD,
-// #elif defined(ENABLE_CHAT_MODE_KEY_TRIG_VAD_FREE) && (ENABLE_CHAT_MODE_KEY_TRIG_VAD_FREE == 1)
-//     .work = &cAPP_WORK_TRIG_VAD,
-// #elif defined(ENABLE_CHAT_MODE_ASR_WAKEUP_SINGEL) && (ENABLE_CHAT_MODE_ASR_WAKEUP_SINGEL == 1)
-//     .work = &cAPP_WORK_WAKEUP_SINGLE,
-// #elif defined(ENABLE_CHAT_MODE_ASR_WAKEUP_FREE) && (ENABLE_CHAT_MODE_ASR_WAKEUP_FREE == 1)
-//     .work = &cAPP_WORK_WAKEUP_FREE,
-// #else
     .work = &cAPP_WORK_HOLD,  // Default fallback
-// #endif
 };
 
 static OPERATE_RET __app_chat_bot_enable(uint8_t enable)
