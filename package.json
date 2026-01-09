@@ -17,10 +17,10 @@
           "help": {
             "online": ""
           },
-          "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/arduino_tuya_open-1.1.9.zip",
+          "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.9/arduino_tuya_open-1.1.9.zip",
           "archiveFileName": "arduino_tuya_open-1.1.9.zip",
-          "size": "10410601",
-          "checksum": "SHA-256:aa76100726f561c1247eb559da96a849ea8615cac981cd721a8b12ad4a8045a6",
+          "size": "10410569",
+          "checksum": "SHA-256:f56e09ebdc9a36187f80d01c4bd7b5b39f945e9711bff8ff2e2455814ae2f4dd",
           "help": {
             "online": ""
           },
@@ -1259,31 +1259,31 @@
           "systems": [
             {
               "host": "x86_64-linux-gnu",
-              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.9/vendor-t5-0.0.6.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
               "size": "93590260",
-              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+              "checksum": "SHA-256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
             },
             {
               "host": "x86_64-cygwin",
-              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.9/vendor-t5-0.0.6.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
               "size": "93590260",
-              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+              "checksum": "SHA-256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
             },
             {
               "host": "arm64-apple-darwin",
-              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.9/vendor-t5-0.0.6.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
               "size": "93590260",
-              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+              "checksum": "SHA-256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
             },
             {
               "host": "x86_64-apple-darwin",
-              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.9/vendor-t5-0.0.6.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
               "size": "93590260",
-              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+              "checksum": "SHA-256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
             }
           ]
         },
