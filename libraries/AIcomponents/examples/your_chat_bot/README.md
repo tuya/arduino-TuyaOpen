@@ -159,6 +159,10 @@ The system transitions between multiple states.
 
 If you have enabled `ENABLE_CHAT_DISPLAY`, the system will display:
 
+`ENABLE_CHAT_DISPLAY` is enabled by default, and LVGL display is initialized in `app_display_init`. Users can create custom displays in `app_display.cpp` using the LVGL API.
+
+The current display integration includes:
+
 *   **User Message**: Transcription of ASR text from user voice
 *   **AI message**：AI's text response (streaming or complete)
 *   **Emotion**: AI emotions are represented by emoticons.

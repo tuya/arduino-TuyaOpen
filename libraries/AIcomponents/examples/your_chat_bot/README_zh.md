@@ -158,7 +158,9 @@ AI_AUDIO_CONFIG_T ai_audio_cfg = {
 
 ## 显示集成
 
-如果启用了 `ENABLE_CHAT_DISPLAY`，系统显示：
+默认启用了 `ENABLE_CHAT_DISPLAY`，在 `app_display_init` 中启动了 LVGL 显示，用户可以在 `app_display.cpp` 中根据 LVGL API 创建自定义显示。
+
+当前显示集成包含：
 
 - **用户消息**：从用户语音转录的 ASR 文本
 - **AI 消息**：来自 AI 的文本响应（流式或完整）

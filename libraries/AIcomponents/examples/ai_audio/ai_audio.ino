@@ -26,7 +26,6 @@
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #define TUYA_PRODUCT_ID     "alon7qgyjj8yus74"
 
-#define LANG_CODE_ZH 0  // Alert：1: Chinese, 0: English
 #define AI_AUDIO_WORK_MODE AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK // choice work mode：provide 4 modes to chat with AI Agent
 
 #define LED_PIN     1
@@ -300,7 +299,6 @@ static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t 
     case AI_AUDIO_EVT_ASR_WAKEUP:
       {
         TuyaAI.stopPlaying();
-        TuyaAI.playAlert(AI_AUDIO_ALERT_WAKEUP);
       }
       break;
 

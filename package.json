@@ -12,6 +12,86 @@
         {
           "name": "Tuya Open",
           "architecture": "tuya_open",
+          "version": "1.1.9",
+          "category": "Contributed",
+          "help": {
+            "online": ""
+          },
+          "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/arduino_tuya_open-1.1.9.zip",
+          "archiveFileName": "arduino_tuya_open-1.1.9.zip",
+          "size": "10410601",
+          "checksum": "SHA-256:aa76100726f561c1247eb559da96a849ea8615cac981cd721a8b12ad4a8045a6",
+          "help": {
+            "online": ""
+          },
+          "boards": [
+            {
+              "name": "t2"
+            },
+            {
+              "name": "t3"
+            },
+            {
+              "name": "t5"
+            },
+            {
+              "name": "ln882h"
+            },
+            {
+              "name": "esp32"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "tuya_open",
+              "name": "gcc-arm-none-eabi",
+              "version": "10.3"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "xtensa-esp-elf",
+              "version": "13.2.0"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t2",
+              "version": "1.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t3",
+              "version": "0.0.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-t5",
+              "version": "0.0.6"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-ln882h",
+              "version": "0.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "vendor-esp32",
+              "version": "0.0.2"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "env-python",
+              "version": "3.12.4"
+            },
+            {
+              "packager": "tuya_open",
+              "name": "tyutool",
+              "version": "1.8.3"
+            }
+          ]
+        },
+        {
+          "name": "Tuya Open",
+          "architecture": "tuya_open",
           "version": "1.1.8",
           "category": "Contributed",
           "help": {
@@ -1170,6 +1250,40 @@
               "archiveFileName": "vendor-t3-0.0.1.zip",
               "size": "95098821",
               "checksum": "SHA-256:294f1f366e3faec758dd9ee6de5152b1720a79936c708af2f84f1a0e5004151a"
+            }
+          ]
+        },
+        {
+          "name": "vendor-t5",
+          "version": "0.0.6",
+          "systems": [
+            {
+              "host": "x86_64-linux-gnu",
+              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
+              "size": "93590260",
+              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+            },
+            {
+              "host": "x86_64-cygwin",
+              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
+              "size": "93590260",
+              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+            },
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
+              "size": "93590260",
+              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/maidang-xing/arduino-TuyaOpen/releases/download/V1.1.9/vendor-t5-0.0.6.tar.bz2",
+              "archiveFileName": "vendor-t5-0.0.6.tar.bz2",
+              "size": "93590260",
+              "checksum": "SHA-256:sha256:565e3a4536dd406c7637c35fcfa728ea78545421aa0794f47ebc998290d31a07"
             }
           ]
         },

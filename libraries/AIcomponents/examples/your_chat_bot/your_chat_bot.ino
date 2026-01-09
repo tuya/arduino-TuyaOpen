@@ -24,6 +24,13 @@
 
 #include "cJSON.h"
 #include "netmgr.h"
+
+#define LANG_CODE_ZH 0  // Alert：1: Chinese, 0: English
+#if LANG_CODE_ZH
+#include "src/media/media_src_zh.h"
+#else
+#include "src/media/media_src_en.h"
+#endif
 /***********************************************************
 ************************macro define************************
 ***********************************************************/
@@ -31,8 +38,10 @@
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #define TUYA_PRODUCT_ID     "alon7qgyjj8yus74"
 
-#define LANG_CODE_ZH 0  // Alert：1: Chinese, 0: English
 #define AI_AUDIO_WORK_MODE AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK // choice work mode：provide 4 modes to chat with AI Agent
+
+#define AI_AUDIO_TEXT_BUFF_LEN (1024)
+#define AI_AUDIO_TEXT_SHOW_LEN (60 * 3)
 
 #define LED_PIN     1
 #define BUTTON_PIN  12
@@ -54,6 +63,7 @@ static void tuyaAIStateCallback(AI_AUDIO_STATE_E state);
 static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg);
 static void tuyaIoTEventCallback(tuya_event_msg_t *event);
 static void buttonEventCallback(char *name, ButtonEvent_t event, void *arg);
+static OPERATE_RET playAlert(AI_AUDIO_ALERT_TYPE_E type);
 static void handleUserInput();
 static void buttonEventInit();
 
@@ -146,7 +156,7 @@ static void buttonEventCallback(char *name, ButtonEvent_t event, void *arg) {
     if (TuyaAI.isPlaying()) {
       return;
     }
-    TuyaAI.playAlert(AI_AUDIO_ALERT_NOT_ACTIVE);
+    playAlert(AI_AUDIO_ALERT_NOT_ACTIVE);
     return;
   }
 
@@ -179,7 +189,7 @@ static void buttonEventCallback(char *name, ButtonEvent_t event, void *arg) {
           break;
         }
         TuyaAI.stopPlaying();
-        TuyaAI.playAlert(AI_AUDIO_ALERT_WAKEUP);
+        playAlert(AI_AUDIO_ALERT_WAKEUP);
         TuyaAI.setWakeup();
 
         PR_DEBUG("button single click");
@@ -269,7 +279,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
         tal_system_reset();
       }
 
-      TuyaAI.playAlert(AI_AUDIO_ALERT_NETWORK_CFG);
+      playAlert(AI_AUDIO_ALERT_NETWORK_CFG);
       break;
 
     case TUYA_EVENT_DIRECT_MQTT_CONNECTED:
@@ -291,7 +301,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
         app_display_send_msg(TY_DISPLAY_TP_NETWORK, (uint8_t *)&wifi_status, sizeof(UI_WIFI_STATUS_E));
 #endif
 
-        TuyaAI.playAlert(AI_AUDIO_ALERT_NETWORK_CONNECTED);
+        playAlert(AI_AUDIO_ALERT_NETWORK_CONNECTED);
         ai_audio_volume_upload();
       }
       break;
@@ -388,7 +398,7 @@ static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t 
         app_display_send_msg(TY_DISPLAY_TP_ASSISTANT_MSG_STREAM_START, data, len);
 #else
         if (NULL == p_ai_text) {
-          p_ai_text = tkl_system_psram_malloc(AI_AUDIO_TEXT_BUFF_LEN);
+          p_ai_text = tal_psram_malloc(AI_AUDIO_TEXT_BUFF_LEN);
           if (NULL == p_ai_text) {
             return;
           }
@@ -477,7 +487,7 @@ static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t 
     case AI_AUDIO_EVT_ASR_WAKEUP:
       {
         TuyaAI.stopPlaying();
-        TuyaAI.playAlert(AI_AUDIO_ALERT_WAKEUP);
+        playAlert(AI_AUDIO_ALERT_WAKEUP);
 
 #if defined(ENABLE_LED) && (ENABLE_LED == 1)
         digitalWrite(LED_PIN, LOW);
@@ -541,4 +551,143 @@ static void tuyaAIStateCallback(AI_AUDIO_STATE_E state) {
     default:
       break;
   }
+}
+
+/**
+ * @brief Plays an alert sound based on the specified alert type.
+ *
+ * @param type - The type of alert to play, defined by the APP_ALERT_TYPE_E enum.
+ * @return OPERATE_RET - Returns OPRT_OK if the alert sound is successfully played, otherwise returns an error code.
+ */
+OPERATE_RET playAlert(AI_AUDIO_ALERT_TYPE_E type)
+{
+    OPERATE_RET rt = OPRT_OK;
+    char alert_id[64] = {0};
+
+    snprintf(alert_id, sizeof(alert_id), "alert_%d", type);
+
+    rt = ai_audio_player_start(alert_id);
+#if LANG_CODE_ZH
+    switch (type) {
+        case AI_AUDIO_ALERT_POWER_ON: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_prologue_zh, sizeof(media_src_prologue_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_NOT_ACTIVE: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_zh,
+                                            sizeof(media_src_network_conn_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_NETWORK_CFG: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_config_zh,
+                                            sizeof(media_src_network_config_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_NETWORK_CONNECTED: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_success_zh,
+                                            sizeof(media_src_network_conn_success_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_NETWORK_FAIL: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_failed_zh,
+                                            sizeof(media_src_network_conn_failed_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_NETWORK_DISCONNECT: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_reconfigure_zh,
+                                            sizeof(media_src_network_reconfigure_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_BATTERY_LOW: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_low_battery_zh, sizeof(media_src_low_battery_zh),
+                                            1);
+        } break;
+        case AI_AUDIO_ALERT_PLEASE_AGAIN: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_please_again_zh,
+                                            sizeof(media_src_please_again_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_WAKEUP: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_ai_zh, sizeof(media_src_ai_zh), 1);
+        } break;
+        case AI_AUDIO_ALERT_LONG_KEY_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_long_press_zh, sizeof(media_src_long_press_zh),
+                                            1);
+        } break;
+        case AI_AUDIO_ALERT_KEY_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_press_talk_zh, sizeof(media_src_press_talk_zh),
+                                            1);
+        } break;
+        case AI_AUDIO_ALERT_WAKEUP_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_wakeup_chat_zh, sizeof(media_src_wakeup_chat_zh),
+                                            1);
+        } break;
+        case AI_AUDIO_ALERT_FREE_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_free_chat_zh, sizeof(media_src_free_chat_zh), 1);
+        } break;
+
+        default:
+            break;
+        }
+#else
+    switch (type) {
+        case AI_AUDIO_ALERT_POWER_ON: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_prologue_en, sizeof(media_src_prologue_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_NOT_ACTIVE: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_en,
+                                            sizeof(media_src_network_conn_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_NETWORK_CFG: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_config_en,
+                                            sizeof(media_src_network_config_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_NETWORK_CONNECTED: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_success_en,
+                                            sizeof(media_src_network_conn_success_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_NETWORK_FAIL: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_conn_failed_en,
+                                            sizeof(media_src_network_conn_failed_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_NETWORK_DISCONNECT: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_network_reconfigure_en,
+                                            sizeof(media_src_network_reconfigure_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_BATTERY_LOW: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_low_battery_en, sizeof(media_src_low_battery_en),
+                                            1);
+        } break;
+        case AI_AUDIO_ALERT_PLEASE_AGAIN: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_please_again_en,
+                                            sizeof(media_src_please_again_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_WAKEUP: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_ai_en, sizeof(media_src_ai_en), 1);
+        } break;
+
+        case AI_AUDIO_ALERT_LONG_KEY_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_long_press_en, sizeof(media_src_long_press_en),
+                                            1);
+        } break;
+
+        case AI_AUDIO_ALERT_KEY_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_press_talk_en, sizeof(media_src_press_talk_en),
+                                            1);
+        } break;
+
+        case AI_AUDIO_ALERT_WAKEUP_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_wakeup_chat_en, sizeof(media_src_wakeup_chat_en),
+                                            1);
+        } break;
+
+        case AI_AUDIO_ALERT_FREE_TALK: {
+            rt = TuyaAI.playerDataWrite(alert_id, (uint8_t *)media_src_free_chat_en, sizeof(media_src_free_chat_en), 1);
+        } break;
+
+        default:
+            break;
+    }
+#endif
+    return rt;
 }

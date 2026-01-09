@@ -1,5 +1,5 @@
 /**
- * @file app_system_info.c
+ * @file app_system_info.cpp
  * @brief app_system_info module is used to
  * @version 0.1
  * @date 2025-04-28

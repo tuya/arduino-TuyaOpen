@@ -3,11 +3,11 @@
 
 #include "TuyaIoT.h"
 
-extern "C"  {
 #include "tuya_cloud_types.h"
+#include "tal_api.h"
+
 #include "inc/ai_audio.h"
 #include "board_com_api.h"
-}
 
 typedef uint8_t APP_CHAT_MODE_E;
 /*Press and hold button to start a single conversation.*/
@@ -62,7 +62,6 @@ public:
     AI_AUDIO_STATE_E getAudioState();
 
     // Player ctrl
-    int playAlert(AI_AUDIO_ALERT_TYPE_E type);
     uint8_t isPlaying();
     int startPlaying(char *id);
     int stopPlaying();
