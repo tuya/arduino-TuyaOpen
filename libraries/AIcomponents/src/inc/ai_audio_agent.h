@@ -88,7 +88,7 @@ OPERATE_RET ai_audio_agent_upload_data(uint8_t *data, uint32_t len);
 OPERATE_RET ai_audio_agent_upload_stop(void);
 
 /**
- * @brief Intrrupt the AI chat process.
+ * @brief Interrupt the AI chat process.
  * @param None
  * @return OPERATE_RET - OPRT_OK on success, or an error code on failure.
  */

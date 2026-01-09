@@ -628,7 +628,7 @@ OPERATE_RET ai_audio_agent_upload_stop(void)
 }
 
 /**
- * @brief Intrrupt the AI upload process.
+ * @brief Interrupt the AI upload process.
  * @param None
  * @return OPERATE_RET - OPRT_OK on success, or an error code on failure.
  */
@@ -641,7 +641,7 @@ OPERATE_RET ai_audio_agent_chat_intrrupt(void)
         return OPRT_COM_ERROR;
     }
 
-    PR_DEBUG("tuya ai chat intrrupt event:%s...", sg_ai.event_id);
+    PR_DEBUG("tuya ai chat Interrupt event:%s...", sg_ai.event_id);
 
     TUYA_CALL_ERR_LOG(tuya_ai_event_chat_break(sg_ai.session_id, sg_ai.event_id, NULL, 0));
 

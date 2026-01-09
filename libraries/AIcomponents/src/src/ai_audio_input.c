@@ -325,7 +325,7 @@ AI_AUDIO_INPUT_STATE_E __ai_audio_input_get_new_state(AI_AUDIO_INPUT_VALID_METHO
 #endif
     } break;
     default:
-        PR_ERR("get vaild voice method:%d not support", method);
+        PR_ERR("get valid voice method:%d not support", method);
         break;
     }
 
