@@ -16,7 +16,7 @@ extern "C" {
 #include "lwip/err.h"
 #include "lwip/dns.h"
 
-#if defined(ARDUINO_T5)
+#if defined(ARDUINO_TUYA_T5AI)
 #include "net.h"
 #else
 #include "lwip/net.h"
@@ -103,15 +103,17 @@ uint8_t WiFiAPClass::softAPgetStationNum()
     if(WiFiGenericClass::getMode() == WWM_POWERDOWN){
         return 0;
     }
-    sta_info = NULL;
-    sta_num = 0;
-    if( tkl_wifi_get_all_sta_info(&sta_info,&sta_num)== OPRT_OK) {
-        if (sta_info) {
-            tal_free(sta_info);
-            sta_info = NULL;
+    
+    WF_STA_LIST_S sta_list = {0};
+    sta_list.array = NULL;
+    sta_list.num = 0;
+    
+    if(tkl_wifi_ioctl(WFI_AP_GET_STALIST_CMD, &sta_list) == OPRT_OK) {
+        uint32_t num = sta_list.num;
+        if (sta_list.array) {
+            tal_free(sta_list.array);
         }
-
-        return sta_num;
+        return num;
     }
     return 0;
 }

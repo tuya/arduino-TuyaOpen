@@ -103,11 +103,11 @@ t3.upload.tool.default=tyutool
 t3.monitor_port.serial.baudrate=115200
 
 # --------------------------------------------------
-#                         T5                        
+#                    TUYA_T5AI                        
 # --------------------------------------------------
-t5.name=T5
+t5.name=TUYA_T5AI
 t5.build.chip=t5
-t5.build.board=T5
+t5.build.board=TUYA_T5AI
 t5.build.core=tuya_open
 t5.build.variant=t5
 

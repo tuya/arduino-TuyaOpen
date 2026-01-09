@@ -1,5 +1,15 @@
+/**
+ * @file display_fill.ino
+ * @brief Example to fill the display with random colors
+ * 
+ * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ * 
+ * @note ===================== Only support TUYA_T5AI platform =====================
+ */
+
 #include "Display.h"
 #include "Log.h"
+
 Display display;
 
 static uint32_t getRandomColor(uint32_t range)
@@ -41,6 +51,7 @@ void setup() {
     PR_NOTICE("Pixel format: %d", display.getPixelFormat());
 
     // Clear screen with black
+    display.setBrightness(100);
     display.clear(0x000000);
     display.flush();
 }
@@ -53,12 +64,6 @@ void loop() {
     rt = display.fillScreen(color);
     if (rt != OPRT_OK) {
         PR_ERR("Failed to fill screen: %d", rt);
-    }
-
-    // Flush to display
-    rt = display.flush();
-    if (rt != OPRT_OK) {
-        PR_ERR("Failed to flush display: %d", rt);
     }
     
     delay(2000);

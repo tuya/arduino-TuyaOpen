@@ -4,4 +4,4 @@
 ignore-words-list = hel,shiftin
 check-filenames =
 check-hidden =
-skip = ./.git
+skip = ./.git, ./libraries/AIcomponents/src/minimp3, ./libraries/Audio/examples/audio_speaker

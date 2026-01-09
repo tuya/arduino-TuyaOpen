@@ -1,16 +1,15 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-extern "C" {
 #include "tuya_cloud_types.h"
 #include "tal_api.h"
-#include "tkl_output.h"
+
 #include "tdl_display_manage.h"
 #include "tdl_display_draw.h"
 #include "tdl_display_driver.h"
 
 #include "tuya_t5ai_ex_module.h"
-}
+
 
 class Display {
 public:
@@ -40,6 +39,7 @@ public:
     OPERATE_RET drawImage(const uint16_t *imageData, uint16_t imgWidth, uint16_t imgHeight, uint16_t x = 0, uint16_t y = 0);
     OPERATE_RET drawImageRotated(const uint16_t *imageData, uint16_t imgWidth, uint16_t imgHeight, TUYA_DISPLAY_ROTATION_E rotation);
     TDL_DISP_FRAME_BUFF_T* createImageBuffer(const uint16_t *imageData, uint16_t imgWidth, uint16_t imgHeight);
+    int deleteImageBuffer(TDL_DISP_FRAME_BUFF_T *frameBuffer);
     OPERATE_RET flushFrameBuffer(TDL_DISP_FRAME_BUFF_T *frameBuffer);
     
     // Display information getters

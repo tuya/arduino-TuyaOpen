@@ -1,25 +1,52 @@
+/**
+ * @file ai_audio.ino
+ * @brief Implements main audio functionality for IoT device
+ * 
+ * This source file provides the implementation of the main audio functionalities
+ * required for an IoT device. It includes functionality for audio processing,
+ * device initialization, event handling, and network communication. The
+ * implementation supports audio volume control, data point processing, and
+ * interaction with the Tuya IoT platform. This file is essential for developers
+ * working on IoT applications that require audio capabilities and integration
+ * with the Tuya IoT ecosystem.
+ * 
+ * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ *
+ * @note ===================== AI audio only support TUYA_T5AI platform =====================
+ */
 #include "TuyaAI.h"
 #include "TuyaIoT.h"
 #include "Log.h"
 
-#define TUYA_DEVICE_UUID "uuidxxxxxxxxxxxxxxxx"
+#include "cJSON.h"
+/***********************************************************
+************************macro define************************
+***********************************************************/
+#define TUYA_DEVICE_UUID    "uuidxxxxxxxxxxxxxxxx"
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#define TUYA_PRODUCT_ID "alon7qgyjj8yus74"
-#define LED_PIN 9
-#define DPID_VOLUME 3
-#define TEXT_SIZE 256
+#define TUYA_PRODUCT_ID     "alon7qgyjj8yus74"
 
+#define AI_AUDIO_WORK_MODE AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK // choice work mode：provide 4 modes to chat with AI Agent
+
+#define LED_PIN     1
+#define BTN_PIN     12
+#define TEXT_SIZE   256
+#define DPID_VOLUME 3
+/***********************************************************
+***********************variable define**********************
+***********************************************************/
 TuyaAI TuyaAI;
 
-uint8_t recv[TEXT_SIZE];
+uint8_t _recv_buf[TEXT_SIZE];
 static uint8_t _need_reset = 0;
 static uint8_t _chat_flag = 0;
-
-static void __app_ai_audio_state_inform_cb(AI_AUDIO_STATE_E state);
-static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg);
-void tuyaIoTEventCallback(tuya_event_msg_t *event);
-void handleUserInput();
-OPERATE_RET ai_audio_player_play_alert(AI_AUDIO_ALERT_TYPE_E type);
+/***********************************************************
+***********************function define**********************
+***********************************************************/
+static void tuyaAIStateCallback(AI_AUDIO_STATE_E state);
+static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg);
+static void tuyaIoTEventCallback(tuya_event_msg_t *event);
+static void handleUserInput();
 
 void setup() {
   OPERATE_RET rt = OPRT_OK;
@@ -38,56 +65,95 @@ void setup() {
   PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
   PR_NOTICE("========================================");
 
+  // Pressing the reset button three times can clear the network configuration information
+  TuyaIoT.resetNetcfg();
+
+  // Hardware initialization
   rt = board_register_hardware();
   if (rt != OPRT_OK) {
     PR_ERR("board register error");
   }
 
-  // Hardware initialization
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, HIGH);
+  digitalWrite(LED_PIN, LOW);
 
   TuyaIoT.setEventCallback(tuyaIoTEventCallback);
   TuyaIoT.setLicense(TUYA_DEVICE_UUID, TUYA_DEVICE_AUTHKEY);
-  // Pressing the reset button three times can clear the network configuration information
-  TuyaIoT.resetNetcfg();
+  TuyaIoT.begin(TUYA_PRODUCT_ID, "1.0.0");
 
   // Initialize AI components
   AI_AUDIO_CONFIG_T ai_audio_cfg = {
-    .work_mode = AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK,
-    .evt_inform_cb = __app_ai_audio_evt_inform_cb,
-    .state_inform_cb = __app_ai_audio_state_inform_cb,
+    .work_mode = AI_AUDIO_WORK_MODE,  // choice work mode
+    .evt_inform_cb = tuyaAIEventCallback,
+    .state_inform_cb = tuyaAIStateCallback,
   };
   TuyaAI.begin(ai_audio_cfg);
 
-  TuyaIoT.begin(TUYA_PRODUCT_ID, "1.0.0");
+  delay(2000); // wait iot init successfully
+  TuyaIoT.resetNetconfigCheck();
 }
 
 void loop() {
-  // Main loop can be empty for this example
   handleUserInput();
-  // PR_INFO("Device Free heap %d", tal_system_get_free_heap_size());
+  
   if (0 == _chat_flag) {
     Serial.println("\nPlease enter information and chat with your AI Agent ...");
     _chat_flag = 1;
   }
-  digitalWrite(LED_PIN, LOW);
-  delay(100);
-  digitalWrite(LED_PIN, HIGH);
+  delay(10);
 }
 
 void handleUserInput() {
   static int i = 0;
   while (Serial.available()) {
     char c = Serial.read();
-    recv[i++] = c;
+    _recv_buf[i++] = c;
     if (c == '\n' || c == '\r') {
-      TuyaAI.textInput(recv, i);
+      TuyaAI.textInput(_recv_buf, i);
       Serial.print("🧍‍♂️ User: ");
-      Serial.write(recv, i);
+      Serial.write(_recv_buf, i);
       i = 0;
     }
   }
+}
+
+OPERATE_RET audio_dp_obj_proc(dp_obj_recv_t *dpobj) {
+  uint32_t index = 0;
+  for (index = 0; index < dpobj->dpscnt; index++) {
+    dp_obj_t *dp = dpobj->dps + index;
+    PR_DEBUG("idx:%d dpid:%d type:%d ts:%u", index, dp->id, dp->type, dp->time_stamp);
+
+    switch (dp->id) {
+      case DPID_VOLUME:
+        {
+          uint8_t volume = dp->value.dp_value;
+          PR_DEBUG("volume:%d", volume);
+          TuyaAI.setVolume(volume);
+          break;
+        }
+      default:
+        break;
+    }
+  }
+
+  return OPRT_OK;
+}
+
+OPERATE_RET ai_audio_volume_upload(void) {
+  uint8_t volume = TuyaAI.getVolume();
+  PR_DEBUG("DP upload volume:%d", volume);
+  return TuyaIoT.write(DPID_VOLUME, &volume, 1, 0);
+}
+
+void user_upgrade_notify_on(tuya_iot_client_t *client, cJSON *upgrade) {
+  PR_INFO("----- Upgrade information -----");
+  PR_INFO("OTA Channel: %d", cJSON_GetObjectItem(upgrade, "type")->valueint);
+  PR_INFO("Version: %s", cJSON_GetObjectItem(upgrade, "version")->valuestring);
+  PR_INFO("Size: %s", cJSON_GetObjectItem(upgrade, "size")->valuestring);
+  PR_INFO("MD5: %s", cJSON_GetObjectItem(upgrade, "md5")->valuestring);
+  PR_INFO("HMAC: %s", cJSON_GetObjectItem(upgrade, "hmac")->valuestring);
+  PR_INFO("URL: %s", cJSON_GetObjectItem(upgrade, "url")->valuestring);
+  PR_INFO("HTTPS URL: %s", cJSON_GetObjectItem(upgrade, "httpsUrl")->valuestring);
 }
 
 // ========== Tuya IoT Event Handler ==========
@@ -118,6 +184,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
       if (first) {
         first = 0;
       }
+      ai_audio_volume_upload();
       break;
 
     /* MQTT with tuya cloud is disconnected, device offline */
@@ -126,10 +193,10 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
       tal_event_publish(EVENT_MQTT_DISCONNECTED, NULL);
       break;
 
-    /* RECV upgrade request */
+    /* _recv_buf upgrade request */
     case TUYA_EVENT_UPGRADE_NOTIFY:
       PR_DEBUG("TUYA_EVENT_UPGRADE_NOTIFY");
-    //   user_upgrade_notify_on(event->value.asJSON);
+      user_upgrade_notify_on(tuya_iot_client_get(), event->value.asJSON);
       break;
 
     /* Sync time with tuya Cloud */
@@ -144,7 +211,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
       _need_reset = 1;
       break;
 
-    /* RECV OBJ DP */
+    /* recv OBJ DP */
     case TUYA_EVENT_DP_RECEIVE_OBJ:
       {
         dp_obj_recv_t *dpobj = event->value.dpobj;
@@ -153,12 +220,12 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
           PR_DEBUG("devid.%s", dpobj->devid);
         }
 
-        // audio_dp_obj_proc(dpobj);
+        audio_dp_obj_proc(dpobj);
         TuyaIoT.write((dpobj->dps->id), (dpobj->dps->value), 0);
       }
       break;
 
-    /* RECV RAW DP */
+    /* recv RAW DP */
     case TUYA_EVENT_DP_RECEIVE_RAW:
       {
         dp_raw_recv_t *dpraw = event->value.dpraw;
@@ -183,7 +250,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event) {
   }
 }
 
-static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg) {
+static void tuyaAIEventCallback(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg) {
   switch (event) {
     case AI_AUDIO_EVT_HUMAN_ASR_TEXT:
       {
@@ -222,7 +289,6 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
             PR_DEBUG("emotion name:%s", emo->name);
           }
           if (emo->text) {
-            // PR_DEBUG("emotion text:%s", emo->text);
             Serial.print(emo->text);
             Serial.print(" ");
           }
@@ -232,8 +298,7 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
 
     case AI_AUDIO_EVT_ASR_WAKEUP:
       {
-        ai_audio_player_stop();
-        // ai_audio_player_play_alert(AI_AUDIO_ALERT_WAKEUP);
+        TuyaAI.stopPlaying();
       }
       break;
 
@@ -243,7 +308,7 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
   return;
 }
 
-static void __app_ai_audio_state_inform_cb(AI_AUDIO_STATE_E state) {
+static void tuyaAIStateCallback(AI_AUDIO_STATE_E state) {
   PR_DEBUG("ai audio state: %d", state);
   switch (state) {
     case AI_AUDIO_STATE_STANDBY:

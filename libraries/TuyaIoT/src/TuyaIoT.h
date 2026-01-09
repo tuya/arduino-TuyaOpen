@@ -152,6 +152,9 @@ public:
 
   // Clear network configuration information
   void resetNetcfg();
+
+  // check whether to reset network configuration
+  int resetNetconfigCheck(void);
 private:
   char _pid[MAX_LENGTH_PRODUCT_ID+1]  = {0}; // +1 is '\0'
   char _version[MAX_LENGTH_SW_VER+1]  = {0};

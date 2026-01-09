@@ -8,6 +8,7 @@ enum{
 	FS_NULL=0,
 	LITTLEFS,
 	FATFS,
+	SDCARD,
 };
 
 class VFSFILE 
