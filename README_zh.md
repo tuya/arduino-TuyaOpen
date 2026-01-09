@@ -8,11 +8,11 @@
 
 arduino-tuyaopen 是 tuya 针对 Arduino 平台提供的开源 IoT 开发框架，让众多喜欢 Arduino 的开发者可以快速开发出基于涂鸦云平台的物联网设备，实现设备远程智能控制。
 
-arduino-tuyaopen 基于 [tuya-open-sdk-for-device](https://github.com/tuya/tuya-open-sdk-for-device) 开发，tuya-open-sdk-for-device 是一款跨芯片平台、操作系统的 IoT 开发框架。它基于通用南向接口设计，支持 Bluetooth、Wi-Fi、Ethernet 等通信协议，提供了物联网开发的核心功能，包括配网，激活，控制，升级等；它具备强大的安全合规能力，包括设备认证、数据加密、通信加密等，满足全球各个国家和地区的数据合规需求。
+arduino-tuyaopen 基于 [TuyaOpen](https://github.com/tuya/TuyaOpen) 开发，TuyaOpen 是一款跨芯片平台、操作系统的 AIoT 开发框架。它基于通用南向接口设计，支持 Bluetooth、Wi-Fi、Ethernet 等通信协议，提供了物联网开发的核心功能，包括配网，激活，控制，升级等；它具备强大的安全合规能力，包括设备认证、数据加密、通信加密等，满足全球各个国家和地区的数据合规需求。
 
-基于 tuya-open-sdk-for-device 开发的 IoT 产品，如果使用 tuya_cloud_service 组件的功能，就可以使用涂鸦APP、云服务提供的强大生态能力，并与 Power By Tuya 设备互联互通。
+基于 TuyaOpen 开发的 IoT 产品，如果使用 tuya_cloud_service 组件的功能，就可以使用涂鸦APP、云服务提供的强大生态能力，并与 Power By Tuya 设备互联互通。
 
-同时 tuya-open-sdk-for-device 将不断拓展，提供更多云平台接入功能，及语音、视频、人脸识别等功能，arduino-tuyaopen 也会同步更新支持更多功能。
+同时 TuyaOpen 将不断拓展，提供更多云平台接入功能，及语音、视频、人脸识别等功能，arduino-tuyaopen 也会同步更新支持更多功能。
 
 ## 支持的芯片
 目前该项目已支持 T2，T3 和 T5 芯片。
@@ -20,7 +20,9 @@ arduino-tuyaopen 基于 [tuya-open-sdk-for-device](https://github.com/tuya/tuya-
 | :--: | :----------------------------------------------------------: |
 |  T2  | [T2](https://developer.tuya.com/cn/docs/iot/T2-U-module-datasheet?id=Kce1tncb80ldq) |
 |  T3  | [T3](https://developer.tuya.com/cn/docs/iot/T3-U-Module-Datasheet?id=Kdd4pzscwf0il) |
-|  T5  | [T5](https://developer.tuya.com/cn/docs/iot/T5-E1-Module-Datasheet?id=Kdar6hf0kzmfi) |
+|  TUYA_T5AI  | [TUYA_T5AI](https://developer.tuya.com/cn/docs/iot/T5-E1-Module-Datasheet?id=Kdar6hf0kzmfi) |
+|  LN882H  | LN882H|
+|  ESP32  | [ESP32](https://www.espressif.com/en/products/socs/esp32/resources) |
 
 ## 支持的操作系统
 
@@ -28,8 +30,9 @@ arduino-tuyaopen 基于 [tuya-open-sdk-for-device](https://github.com/tuya/tuya-
 | :--: | :------: | :---: | :------: |
 |  T2  |   支持   | 支持  |  暂不支持  |
 |  T3  |   支持   | 支持  |   支持    |
-|  T5  |   支持   | 支持  |   支持    |
+|  TUYA_T5AI  |   支持   | 支持  |   支持    |
 |  LN882H  |   支持   | 支持  |   支持    |
+|  ESP32  |   支持   | 支持  |   支持    |
 
 > 注意：当前部分芯片未支持某些操作系统，我们正在全力支持中，敬请期待！
 

@@ -17,10 +17,10 @@
           "help": {
             "online": ""
           },
-          "url": "https://images.tuyacn.com/rms-static/7b277df0-e242-11f0-946a-f10d211a0860-1766743561039.zip?tyName=arduino_tuya_open-1.1.8.zip",
+          "url": "https://images.tuyacn.com/rms-static/2ed7ade0-e462-11f0-946a-f10d211a0860-1766977079230.zip?tyName=arduino_tuya_open-1.1.8.zip",
           "archiveFileName": "arduino_tuya_open-1.1.8.zip",
-          "size": "887188",
-          "checksum": "SHA-256:2260b87501ae4bbf8be8887dc69bbb8076b4e8d243970eb28f94448af6de9a48",
+          "size": "882260",
+          "checksum": "SHA-256:9926a8eafffd46fadc15b383d5046d5b49ed4eedd715f64b82cbdf36360aa011",
           "help": {
             "online": ""
           },
@@ -1179,31 +1179,31 @@
           "systems": [
             {
               "host": "x86_64-linux-gnu",
-              "url": "https://images.tuyacn.com/rms-static/8cf523c0-e242-11f0-946a-f10d211a0860-1766743590908.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
+              "url": "https://images.tuyacn.com/rms-static/edb443a0-e461-11f0-9295-ddfc290a59b7-1766976969946.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "x86_64-cygwin",
-              "url": "https://images.tuyacn.com/rms-static/8cf523c0-e242-11f0-946a-f10d211a0860-1766743590908.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
+              "url": "https://images.tuyacn.com/rms-static/edb443a0-e461-11f0-9295-ddfc290a59b7-1766976969946.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "arm64-apple-darwin",
-              "url": "https://images.tuyacn.com/rms-static/8cf523c0-e242-11f0-946a-f10d211a0860-1766743590908.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
+              "url": "https://images.tuyacn.com/rms-static/edb443a0-e461-11f0-9295-ddfc290a59b7-1766976969946.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "x86_64-apple-darwin",
-              "url": "https://images.tuyacn.com/rms-static/8cf523c0-e242-11f0-946a-f10d211a0860-1766743590908.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
+              "url": "https://images.tuyacn.com/rms-static/edb443a0-e461-11f0-9295-ddfc290a59b7-1766976969946.tar.bz2?tyName=vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             }
           ]
         },

@@ -61,6 +61,7 @@ void TuyaIoTCloudClass::setLogLevel(TAL_LOG_LEVEL_E level)
 
 void TuyaIoTCloudClass::begin(const char *pid, const char *version)
 {
+  PR_DEBUG("TuyaIoTCloudClass::begin pid=%s, version=%s", pid, version);
   strncpy(this->_pid, pid, MAX_LENGTH_PRODUCT_ID);
   strncpy(this->_version, version, MAX_LENGTH_SW_VER);
 
@@ -313,6 +314,11 @@ void TuyaIoTCloudClass::uartAuthInit()
 void TuyaIoTCloudClass::resetNetcfg()
 {
   reset_netconfig_start();
+}
+
+int TuyaIoTCloudClass::resetNetconfigCheck(void)
+{
+  return reset_netconfig_check();
 }
 /******************************************************************************
  * PRIVATE MEMBER FUNCTIONS

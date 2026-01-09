@@ -1,3 +1,12 @@
+/**
+ * @file display_picture.ino
+ * @brief Example to display a picture on the screen
+ *
+ * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ * 
+ * @note ===================== Only support TUYA_T5AI platform =====================
+ */
+
 #include "Display.h"
 #include "Log.h"
 
@@ -65,7 +74,13 @@ void loop()
         TDL_DISP_FRAME_BUFF_T *imageFb = display.createImageBuffer((const uint16_t*)imga_data, imga_width, imga_height);
         if (imageFb != NULL) {
             rt = display.flushFrameBuffer(imageFb);
-            tdl_disp_free_frame_buff(imageFb);
+            if (rt != OPRT_OK) {
+                PR_ERR("Failed to flush image buffer: %d", rt);
+            }
+            rt = display.deleteImageBuffer(imageFb);
+            if (rt != OPRT_OK) {
+                PR_ERR("Failed to delete image buffer: %d", rt);
+            }
         } else {
             rt = OPRT_MALLOC_FAILED;
         }

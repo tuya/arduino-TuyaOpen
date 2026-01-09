@@ -1,10 +1,13 @@
 #include "file.h"
 #include "LittleFS.h"
+#include "SDCard.h"
 
 VFSFILE::VFSFILE(int type)
 {
 	if (type == LITTLEFS)
 		impl = new FS_LITTLEFS();
+	else if (type == SDCARD)
+		impl = new FS_SDCARD();
 	else if (type == FATFS)
 		impl;
 	else 

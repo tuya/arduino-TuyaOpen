@@ -30,8 +30,9 @@ Display::Display()
     display_cfg.sw_spi_cfg.spi_rst = BOARD_LCD_SW_SPI_RST_PIN;
 
     display_cfg.bl.type              = BOARD_LCD_BL_TYPE;
-    display_cfg.bl.gpio.pin          = BOARD_LCD_BL_PIN;
-    display_cfg.bl.gpio.active_level = BOARD_LCD_BL_ACTIVE_LV;
+    display_cfg.bl.pwm.id            = BOARD_LCD_BL_PWM_ID;
+    display_cfg.bl.pwm.cfg.frequency = 1000;
+    display_cfg.bl.pwm.cfg.duty      = 10000; // 0-10000
 
     display_cfg.width     = BOARD_LCD_WIDTH;
     display_cfg.height    = BOARD_LCD_HEIGHT;
@@ -307,6 +308,16 @@ TDL_DISP_FRAME_BUFF_T* Display::createImageBuffer(const uint16_t *imageData, uin
     }
 
     return fb;
+}
+
+int Display::deleteImageBuffer(TDL_DISP_FRAME_BUFF_T *frameBuffer)
+{
+    if (frameBuffer == NULL) {
+        PR_ERR("Invalid frame buffer");
+        return OPRT_INVALID_PARM;
+    }
+    tdl_disp_free_frame_buff(frameBuffer);
+    return OPRT_OK;
 }
 
 OPERATE_RET Display::drawImage(const uint16_t *imageData, uint16_t imgWidth, uint16_t imgHeight, uint16_t x, uint16_t y)

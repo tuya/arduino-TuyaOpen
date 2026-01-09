@@ -1,11 +1,30 @@
+/**
+ * @file switch_demo.ino
+ * @brief A simple example demonstrating Tuya IoT switch functionality
+ * 
+ * This source file provides a basic implementation of a switch device using the Tuya IoT platform.
+ * It includes functionality for device initialization, event handling, and network communication.
+ * This example is intended for developers looking to create IoT applications that require switch capabilities
+ * and integration with the Tuya IoT ecosystem.
+ * 
+ * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ *
+ * @note ===================== Chat bot only support TUYA_T5AI platform =====================
+ */
 #include "Log.h"
 #include "TuyaIoT.h"
 
-char c;
-// Tuya license
+/***********************************************************
+************************macro define************************
+***********************************************************/
 #define TUYA_DEVICE_UUID    "uuidxxxxxxxxxxxxxxxx"
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define TUYA_PRODUCT_ID     "qhivvyqawogv04e4"
 #define APP_LED_PIN         1
+
+/***********************************************************
+***********************function define**********************
+***********************************************************/
 void tuyaIoTEventCallback(tuya_event_msg_t *event);
 
 void setup(void)
@@ -20,25 +39,25 @@ void setup(void)
     tuya_iot_license_t license;
     int rt = TuyaIoT.readBoardLicense(&license);
     if (OPRT_OK != rt) {
-        license.uuid = TUYA_DEVICE_UUID;
-        license.authkey = TUYA_DEVICE_AUTHKEY;
+        license.uuid = (char *)TUYA_DEVICE_UUID;
+        license.authkey = (char *)TUYA_DEVICE_AUTHKEY;
         Serial.println("Replace the TUYA_DEVICE_UUID and TUYA_DEVICE_AUTHKEY contents, otherwise the demo cannot work");
     }
     Serial.print("uuid: "); Serial.println(license.uuid);
     Serial.print("authkey: "); Serial.println(license.authkey);
-    license.uuid = TUYA_DEVICE_UUID;
-    license.authkey = TUYA_DEVICE_AUTHKEY;
+    license.uuid = (char *)TUYA_DEVICE_UUID;
+    license.authkey = (char *)TUYA_DEVICE_AUTHKEY;
     TuyaIoT.setLicense(license.uuid, license.authkey);
 
     // The "PROJECT_VERSION" comes from the "PROJECT_VERSION" field in "appConfig.json"
-    TuyaIoT.begin("qhivvyqawogv04e4", PROJECT_VERSION);
+    TuyaIoT.begin(TUYA_PRODUCT_ID, PROJECT_VERSION);
 }
 
 void loop()
 {
     while(Serial.available() > 0)
     {
-        c = Serial.read();
+        char c = Serial.read();
         Serial.write(&c, 1);
     }
     delay(100);

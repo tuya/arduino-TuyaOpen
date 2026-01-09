@@ -19,8 +19,8 @@
           },
           "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.8/arduino_tuya_open-1.1.8.zip",
           "archiveFileName": "arduino_tuya_open-1.1.8.zip",
-          "size": "887188",
-          "checksum": "SHA-256:2260b87501ae4bbf8be8887dc69bbb8076b4e8d243970eb28f94448af6de9a48",
+          "size": "882260",
+          "checksum": "SHA-256:9926a8eafffd46fadc15b383d5046d5b49ed4eedd715f64b82cbdf36360aa011",
           "help": {
             "online": ""
           },
@@ -1181,29 +1181,29 @@
               "host": "x86_64-linux-gnu",
               "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.8/vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "x86_64-cygwin",
               "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.8/vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "arm64-apple-darwin",
               "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.8/vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             },
             {
               "host": "x86_64-apple-darwin",
               "url": "https://github.com/tuya/arduino-tuyaopen/releases/download/1.1.8/vendor-t5-0.0.5.tar.bz2",
               "archiveFileName": "vendor-t5-0.0.5.tar.bz2",
-              "size": "93594283",
-              "checksum": "SHA-256:f49e2800d356e1a33be57dafab88b514ab4619e49800b5ba363dac54c6242052"
+              "size": "93596566",
+              "checksum": "SHA-256:edc6622df0664e2971827a01255bb778d01d11bf83222565a7d64ba86dc3a234"
             }
           ]
         },
