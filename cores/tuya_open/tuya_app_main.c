@@ -14,7 +14,7 @@
 
 #include "cJSON.h"
 #include "tkl_uart.h"
-
+#include "netmgr.h"
 #if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
 #include "netconn_wifi.h"
 #endif
@@ -60,19 +60,19 @@ static char thread_name[] = "arduino_thread";
 /***********************************************************
 ***********************function define**********************
 ***********************************************************/
-static void __wifi_callback_event(WF_EVENT_E event, void *arg)
-{
-  return;
-}
+// static void __wifi_callback_event(WF_EVENT_E event, void *arg)
+// {
+//   return;
+// }
 
 void app_open_sdk_init(void)
 {
-  // cJSON init
-  cJSON_Hooks hooks = {
-    .malloc_fn = tal_malloc,
-    .free_fn = tal_free
-  };
-  cJSON_InitHooks(&hooks);
+  //! open iot development kit runtim init
+#if defined(ENABLE_EXT_RAM) && (ENABLE_EXT_RAM == 1)
+    cJSON_InitHooks(&(cJSON_Hooks){.malloc_fn = tal_psram_malloc, .free_fn = tal_psram_free});
+#else 
+    cJSON_InitHooks(&(cJSON_Hooks){.malloc_fn = tal_malloc, .free_fn = tal_free});
+#endif
 
   // file system init
   tal_kv_cfg_t kv_cfg = {
@@ -94,8 +94,21 @@ void app_open_sdk_init(void)
   // TODO: set country code
   // TODO: use netconn_wifi functions
 #if (!defined(ARDUINO_TUYA_T5AI) && !defined(ARDUINO_ESP32))
-  tal_wifi_init(__wifi_callback_event);
+  // tal_wifi_init(__wifi_callback_event);
+  // network init
+  netmgr_type_e type = 0;
+#if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
+  type |= NETCONN_WIFI;
+#endif
+#if defined(ENABLE_WIRED) && (ENABLE_WIRED == 1)
+  type |= NETCONN_WIRED;
+#endif
+  netmgr_init(type);
+#if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
+  netmgr_conn_set(NETCONN_WIFI, NETCONN_CMD_NETCFG, &(netcfg_args_t){.type = NETCFG_TUYA_BLE | NETCFG_TUYA_WIFI_AP});
+#endif
   tal_wifi_set_country_code("CN");
+  tkl_wifi_set_lp_mode(0, 0);
 #endif
 }
 

@@ -11,7 +11,7 @@
  * @note ===================== Chat bot only support TUYA_T5AI platform =====================
  */
 
-#include "file.h"
+#include "File.h"
 #include "Log.h"
 
 // SD Card mount point - can be customized

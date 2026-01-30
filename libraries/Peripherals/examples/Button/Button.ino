@@ -15,7 +15,6 @@
  * @note ===================== Chat bot only support TUYA_T5AI platform =====================
  */
 
-#include <Arduino.h>
 #include "Button.h"
 #include "Log.h"
 
@@ -27,7 +26,52 @@
 Button Button0;
 Button Button1;
 
-void buttonCallback(char *name, ButtonEvent_t event, void *arg)
+static void buttonCallback(char *name, ButtonEvent_t event, void *arg);
+
+void setup()
+{
+    // Initialize serial communication
+    Serial.begin(115200);
+    Log.begin();
+
+    //========== Button configuration mothod 1 ==========//
+    ButtonConfig_t cfg;
+    cfg.debounceTime = 50;
+    cfg.longPressTime = 2000;
+    cfg.longPressHoldTime = 500;
+    cfg.multiClickCount = 2;
+    cfg.multiClickInterval = 500;
+
+    PinConfig_t pinCfg0;
+    pinCfg0.pin = BUTTON_PIN0;
+    pinCfg0.level = TUYA_GPIO_LEVEL_LOW;
+    pinCfg0.pullMode = TUYA_GPIO_PULLUP;
+
+    // Initialize buttons with name
+    Button0.begin("Button0", pinCfg0, cfg);
+    // Register button event callbacks
+    Button0.setEventCallback(BUTTON_EVENT_PRESS_DOWN, buttonCallback);
+    Button0.setEventCallback(BUTTON_EVENT_PRESS_UP, buttonCallback);
+    Button0.setEventCallback(BUTTON_EVENT_SINGLE_CLICK, buttonCallback);
+
+    //========== Button configuration mothod 2: ==========//
+    PinConfig_t pinCfg1;
+    pinCfg1.pin = BUTTON_PIN1;
+    pinCfg1.level = TUYA_GPIO_LEVEL_LOW;
+    pinCfg1.pullMode = TUYA_GPIO_PULLUP;
+
+    Button1.begin("Button1", pinCfg1, cfg);
+    Button1.setEventCallback(BUTTON_EVENT_PRESS_DOWN, buttonCallback);
+    Button1.setEventCallback(BUTTON_EVENT_PRESS_UP, buttonCallback);
+    Button1.setEventCallback(BUTTON_EVENT_SINGLE_CLICK, buttonCallback);
+}
+
+void loop()
+{
+    delay(10);
+}
+
+static void buttonCallback(char *name, ButtonEvent_t event, void *arg)
 {
     PR_DEBUG("[%s] Event: %d", name, event);
 
@@ -47,46 +91,4 @@ void buttonCallback(char *name, ButtonEvent_t event, void *arg)
         default:
             break;
     }
-}
-
-void setup()
-{
-    // Initialize serial communication
-    Serial.begin(115200);
-    Log.begin();
-
-    ButtonConfig_t cfg;
-    cfg.debounceTime = 50;
-    cfg.longPressTime = 2000;
-    cfg.longPressHoldTime = 500;
-    cfg.multiClickCount = 2;
-    cfg.multiClickInterval = 500;
-
-    PinConfig_t pinCfg0;
-    pinCfg0.pin = BUTTON_PIN0;
-    pinCfg0.level = TUYA_GPIO_LEVEL_LOW;
-    pinCfg0.pullMode = TUYA_GPIO_PULLUP;
-
-    PinConfig_t pinCfg1;
-    pinCfg1.pin = BUTTON_PIN1;
-    pinCfg1.level = TUYA_GPIO_LEVEL_LOW;
-    pinCfg1.pullMode = TUYA_GPIO_PULLUP;
-
-    // Initialize buttons with name
-    Button0.begin("Button0", pinCfg0, cfg);
-    Button1.begin("Button1", pinCfg1, cfg);
-
-    // Register button event callbacks
-    Button0.setEventCallback(BUTTON_EVENT_PRESS_DOWN, buttonCallback);
-    Button0.setEventCallback(BUTTON_EVENT_PRESS_UP, buttonCallback);
-    Button0.setEventCallback(BUTTON_EVENT_SINGLE_CLICK, buttonCallback);
-
-    Button1.setEventCallback(BUTTON_EVENT_PRESS_DOWN, buttonCallback);
-    Button1.setEventCallback(BUTTON_EVENT_PRESS_UP, buttonCallback);
-    Button1.setEventCallback(BUTTON_EVENT_SINGLE_CLICK, buttonCallback);
-}
-
-void loop()
-{
-    delay(10);
 }

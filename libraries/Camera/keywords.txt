@@ -1,0 +1,40 @@
+#######################################
+# Syntax Coloring Map For Camera
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Camera	KEYWORD1
+CameraFrame_t	KEYWORD1
+CameraConfig_t	KEYWORD1
+CameraFormat_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+end	KEYWORD2
+setFrameCallback	KEYWORD2
+setEncodedFrameCallback	KEYWORD2
+getWidth	KEYWORD2
+getHeight	KEYWORD2
+getFPS	KEYWORD2
+getFormat	KEYWORD2
+getMaxWidth	KEYWORD2
+getMaxHeight	KEYWORD2
+getMaxFPS	KEYWORD2
+isInitialized	KEYWORD2
+getLastError	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+CAMERA_FMT_YUV422	LITERAL1
+CAMERA_FMT_JPEG	LITERAL1
+CAMERA_FMT_H264	LITERAL1
+CAMERA_FMT_JPEG_YUV422	LITERAL1
+CAMERA_FMT_H264_YUV422	LITERAL1

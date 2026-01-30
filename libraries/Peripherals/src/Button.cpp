@@ -8,10 +8,6 @@
 
 #include "Button.h"
 
-extern "C" {
-#include "tal_api.h"
-}
-
 /***********************************************************
  * Static Members
  ***********************************************************/
@@ -34,7 +30,7 @@ Button::~Button()
  * Public Methods
  ***********************************************************/
 
-int Button::begin(const char *name, PinConfig_t pinConfig, ButtonConfig_t config)
+OPERATE_RET Button::begin(const char *name, PinConfig_t pinConfig, ButtonConfig_t config)
 {
     OPERATE_RET rt = OPRT_OK;
 
@@ -54,6 +50,20 @@ int Button::begin(const char *name, PinConfig_t pinConfig, ButtonConfig_t config
     };
     TUYA_CALL_ERR_RETURN(tdl_button_create((char *)name, &button_cfg, &_handle));
     return OPRT_OK;
+}
+
+OPERATE_RET Button::begin(const char *name, PinConfig_t pinConfig)
+{
+    // Use default button configuration
+    ButtonConfig_t defaultConfig = {
+        .debounceTime = 50,              // 50ms debounce
+        .longPressTime = 3000,           // 3s for long press
+        .longPressHoldTime = 1000,       // 1s hold interval
+        .multiClickCount = 2,            // Double click threshold
+        .multiClickInterval = 500        // 500ms between clicks
+    };
+    
+    return begin(name, pinConfig, defaultConfig);
 }
 
 void Button::end()

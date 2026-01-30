@@ -88,6 +88,9 @@ void loop() {
     if(Serial.available()){
       size_t len = Serial.available();
       uint8_t *sbuf = (uint8_t *)tal_malloc(len);
+      if (NULL == sbuf) {
+        PR_ERR("sbuf malloc failed");
+      }
       Serial.readBytes(sbuf, len);
       //push UART data to all connected telnet clients
       for(i = 0; i < MAX_SRV_CLIENTS; i++){

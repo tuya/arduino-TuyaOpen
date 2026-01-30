@@ -1,4 +1,5 @@
 menu.UploadSpeed=Upload Speed
+menu.Language=Language
 
 # --------------------------------------------------
 #                         T2                        
@@ -123,6 +124,11 @@ t5.menu.UploadSpeed.1500000=1500000
 t5.menu.UploadSpeed.1500000.upload.speed=1500000
 t5.menu.UploadSpeed.2000000=2000000
 t5.menu.UploadSpeed.2000000.upload.speed=2000000
+
+t5.menu.Language.en_us=English
+t5.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
+t5.menu.Language.zh_cn=Chinese (¼òÌåÖÐÎÄ)
+t5.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
 
 t5.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
 t5.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc

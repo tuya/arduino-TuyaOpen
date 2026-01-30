@@ -44,15 +44,27 @@ uint8_t adcPinToChannel(uint8_t pin)
 {
   switch (pin) {
     case 25:
-      return 0;
-    case 24:
       return 1;
-    case 23:
+    case 24:
       return 2;
-    case 28:
+    case 23:
       return 3;
-    case 22:
+    case 28:
       return 4;
+    case 22:
+      return 5;
+    case 21:
+      return 6;
+    case 8:
+      return 7;
+    case 0:
+      return 8;
+    case 1:
+      return 9;
+    case 12:
+      return 10;
+    case 13:
+      return 11;
     default:
       return TUYA_ADC_INVALID_VALUE;
   }
@@ -77,6 +89,20 @@ TUYA_PWM_NUM_E pwmPinToNum(uint8_t pin)
       return TUYA_PWM_NUM_3;
     case 36:
       return TUYA_PWM_NUM_4;
+    case 19:
+      return TUYA_PWM_NUM_5;
+    case 8:
+      return TUYA_PWM_NUM_6;
+    case 9:
+      return TUYA_PWM_NUM_7;
+    case 25:
+      return TUYA_PWM_NUM_8;
+    case 33:
+      return TUYA_PWM_NUM_9;
+    case 35:
+      return TUYA_PWM_NUM_10;
+    case 37:
+      return TUYA_PWM_NUM_11;
     default:
       return TUYA_PWM_NUM_MAX;
   }

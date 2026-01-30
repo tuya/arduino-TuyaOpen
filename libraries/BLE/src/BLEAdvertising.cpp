@@ -20,6 +20,10 @@ void BLEAdvertising::setAdvertisementData(uint8_t *adv_data, uint8_t len)
 {
 	TKL_BLE_DATA_T p_adv;
 	p_adv.p_data = (uint8_t *)tal_malloc(sizeof(uint8_t)*len);
+	if (NULL == p_adv.p_data) {
+		PR_ERR("malloc adv data failed");
+		return;
+	}
 	memcpy(p_adv.p_data, adv_data, len);
 	p_adv.length = len;
 	tkl_ble_gap_adv_rsp_data_set(&p_adv, NULL);	
@@ -29,6 +33,10 @@ void BLEAdvertising::setScanResponseData(uint8_t *adv_rsp_data,uint8_t len)
 {
 	TKL_BLE_DATA_T p_scan_rsp;
 	p_scan_rsp.p_data = (uint8_t *)tal_malloc(sizeof(uint8_t)*len);
+	if (NULL == p_scan_rsp.p_data) {
+		PR_ERR("malloc scan rsp data failed");
+		return;
+	}
 	memcpy(p_scan_rsp.p_data, adv_rsp_data, len);
 	p_scan_rsp.length = len;
 	tkl_ble_gap_adv_rsp_data_set(NULL, &p_scan_rsp);	
