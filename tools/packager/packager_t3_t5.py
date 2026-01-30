@@ -115,7 +115,6 @@ def get_qio_binary_t3_t5(chip_info):
             return False
         config_json["section"][1]["firmware"] = cp_app_file
         config_json["section"][2]["firmware"] = chip_info.bin_file
-        logging.info(f"T5 dual-core: CP={cp_app_file}, AP={chip_info.bin_file}")
     else:
         # T3: only 2 sections
         config_json["section"][1]["firmware"] = chip_info.bin_file
@@ -178,6 +177,23 @@ def get_qio_binary_t3_t5(chip_info):
     chip_info.bin_file_QIO = os.path.join(chip_info.output_path, f"{chip_info.sketch_name}_QIO_{chip_info.sketch_version}.bin")
 
     shutil.move(all_app_pack_crc_file, chip_info.bin_file_QIO)
+
+    # Print build success information
+    qio_bin_name = os.path.basename(chip_info.bin_file_QIO)
+    chip_upper = chip_info.chip.upper()
+    platform_name = "T5AI" if chip_info.chip == 't5' else chip_upper
+    board_name = f"TUYA_{platform_name}_BOARD"
+    
+    logging.info("")
+    logging.info("[NOTE]:")
+    logging.info("====================[ BUILD SUCCESS ]===================")
+    logging.info(f" Target    : {qio_bin_name}")
+    logging.info(f" Output    : {chip_info.output_path}")
+    logging.info(f" Platform  : {platform_name}")
+    logging.info(f" Chip      : {platform_name}")
+    logging.info(f" Board     : {board_name}")
+    logging.info(f" Framework : Arduino")
+    logging.info("========================================================")
 
     return True
 

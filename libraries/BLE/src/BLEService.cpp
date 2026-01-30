@@ -62,6 +62,10 @@ BLEService::BLEService(std::string uuid)
     if (!ble_service_char) {
         ble_service_char = (TKL_BLE_CHAR_PARAMS_T *)tal_malloc(sizeof(TKL_BLE_CHAR_PARAMS_T) * TKL_BLE_GATT_CHAR_MAX_NUM);
     }
+	if (!ble_gatt_service || !ble_service || !ble_service_char) {
+		PR_ERR("malloc ble service failed");
+		return;
+	}
 
 	ble_gatt_service->svc_num  = 1 ;
     ble_gatt_service->p_service = ble_service;

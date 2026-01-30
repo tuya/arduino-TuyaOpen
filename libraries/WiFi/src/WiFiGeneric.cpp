@@ -127,7 +127,8 @@ static bool _start_network_event_task()
     THREAD_CFG_T param;
     param.priority = THREAD_PRIO_3;
     param.stackDepth = 4096;
-    param.thrdname =  "arduino_events";
+    char threadName[] = "arduino_events";
+    param.thrdname =  threadName;
 
     if(!_arduino_event_task_handle)
     {
@@ -404,9 +405,9 @@ bool WiFiGenericClass::mode(WiFiMode_t m)
 
 WF_WK_MD_E WiFiGenericClass::getMode()
 {
-    if(!lowLevelInitDone || !_bk_wifi_started){
-        return WWM_POWERDOWN; 
-    }
+    // if(!lowLevelInitDone || !_bk_wifi_started){
+    //     return WWM_POWERDOWN; 
+    // }
     WF_WK_MD_E mode;
     if(tkl_wifi_get_work_mode(&mode) != 0){
         PR_ERR("WiFi not started");

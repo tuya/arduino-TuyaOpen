@@ -20,12 +20,11 @@
 
 #include <Arduino.h>
 
-extern "C" {
 #include "tuya_cloud_types.h"
+#include "tal_api.h"
 #include "tkl_gpio.h"
 #include "tdl_button_manage.h"
 #include "tdd_button_gpio.h"
-}
 
 /***********************************************************
  * TYPEDEF
@@ -104,9 +103,18 @@ public:
      * @param name Button name (must be unique)
      * @param pinConfig Pin configuration structure
      * @param config Button event configuration structure
-     * @return 0 if successful, error code otherwise
+     * @return OPRT_OK if successful, error code otherwise
      */
-    int begin(const char *name, PinConfig_t pinConfig, ButtonConfig_t config);
+    OPERATE_RET begin(const char *name, PinConfig_t pinConfig, ButtonConfig_t config);
+
+    /**
+     * @brief Initialize button with default configuration
+     * Uses default timing values for debounce, long press, and multi-click
+     * @param name Button name (must be unique)
+     * @param pinConfig Pin configuration structure
+     * @return OPRT_OK if successful, error code otherwise
+     */
+    OPERATE_RET begin(const char *name, PinConfig_t pinConfig);
 
     /**
      * @brief Deinitialize button

@@ -1,357 +1,503 @@
-#include "Audio.h"
-#include "tdd_audio.h"
-// Global instance pointer for C callback
-static Audio* g_audio_instance = NULL;
+/**
+ * @file Audio.cpp
+ * @brief Arduino Audio class implementation for Tuya Open platform
+ * @version 2.0
+ * @copyright Copyright (c) 2021-2026 Tuya Inc. All Rights Reserved.
+ */
 
-// C callback wrapper function - writes to ring buffer and calls user callback
-static void audio_frame_callback_internal(TDL_AUDIO_FRAME_FORMAT_E type, 
-                                         TDL_AUDIO_STATUS_E status,
-                                         uint8_t* data, 
-                                         uint32_t len)
+#include "Audio.h"
+
+#include "tuya_ringbuf.h"
+#include "tkl_output.h"
+
+#include "tdl_audio_manage.h"
+#include "tdd_audio.h"
+
+// Internal implementation structure (hidden from users)
+struct AudioImpl {
+    void* audioHandle;              // TDL_AUDIO_HANDLE_T
+    bool initialized;
+    
+    // Audio info
+    uint32_t frameSize;
+    uint32_t sampleTimeMs;
+    
+    // Status
+    AudioStatus micStatus;
+    AudioStatus spkStatus;
+    
+    // Ring buffer for microphone only
+    void* micRingBuffer;            // TUYA_RINGBUFF_T for microphone
+    uint32_t micBufferSize;
+    
+    // Configuration
+    uint8_t volume;
+    uint8_t spkPin;
+    bool enableAEC;
+    
+    // Callback
+    AudioFrameCallback userCallback;
+    
+    // Playback control
+    bool stopPlayFlag;
+};
+
+// Global instance pointer for C callback
+static Audio* g_audioInstance = nullptr;
+
+// Internal C callback for audio frames
+static void audioFrameCallbackInternal(TDL_AUDIO_FRAME_FORMAT_E type,
+                                       TDL_AUDIO_STATUS_E status,
+                                       uint8_t* data,
+                                       uint32_t len)
 {
-    if (g_audio_instance != NULL) {
-        // Write to ring buffer if recording
-        if (g_audio_instance->isRecording() && g_audio_instance->getRecordBuffer() != NULL) {
-            tuya_ring_buff_write(g_audio_instance->getRecordBuffer(), data, len);
-        }
-        
-        // Call user callback if set
-        if (g_audio_instance->getFrameCallback() != NULL) {
-            g_audio_instance->getFrameCallback()(data, len);
-        }
+    if (g_audioInstance == nullptr || g_audioInstance->getImpl() == nullptr) {
+        return;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(g_audioInstance->getImpl());
+    
+    // Write to microphone ring buffer if recording
+    if (impl->micStatus == AudioStatus::RECORDING && impl->micRingBuffer != nullptr) {
+        TUYA_RINGBUFF_T micBuf = static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer);
+        tuya_ring_buff_write(micBuf, data, len);
+    }
+    
+    // Call user callback if set
+    if (impl->userCallback != nullptr) {
+        impl->userCallback(data, len);
     }
 }
 
-// Constructor
-Audio::Audio() 
-    : sg_audio_status(AUDIO_STATUS_IDLE), 
-      sg_audio_hdl(NULL), 
-      sg_recorder_pcm_rb(NULL),
-      record_duration_ms(3000),  // Default 3 seconds
-      current_volume(60),
-      frame_callback(NULL),
-      stop_play_flag(false)
+Audio::Audio()
+    : _impl(nullptr)
 {
-    memset(&sg_audio_info, 0, sizeof(TDL_AUDIO_INFO_T));
-    g_audio_instance = this;
+    g_audioInstance = this;
 }
 
-// Destructor
 Audio::~Audio()
 {
     end();
-    if (g_audio_instance == this) {
-        g_audio_instance = NULL;
+    if (g_audioInstance == this) {
+        g_audioInstance = nullptr;
     }
 }
 
-// Initialization
-OPERATE_RET Audio::begin(const AUDIO_CONFIG_T* config)
+OPERATE_RET Audio::begin(const AudioConfig* config)
 {
-    OPERATE_RET rt = OPRT_OK;
-    uint32_t buf_len = 0;
-
-    // Use provided config or defaults
-    if (config != NULL) {
-        record_duration_ms = config->duration_ms;
-        current_volume = config->volume;
+    if (_impl != nullptr && static_cast<AudioImpl*>(_impl)->initialized) {
+        PR_WARN("Audio already initialized");
+        return OPRT_OK;
     }
-
-#if defined(AUDIO_CODEC_NAME)
-    TDD_AUDIO_T5AI_T cfg = {0};
+    
+    // Allocate implementation structure
+    _impl = tal_psram_malloc(sizeof(AudioImpl));
+    if (_impl == nullptr) {
+        PR_ERR("Failed to allocate audio implementation");
+        return OPRT_MALLOC_FAILED;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    memset(impl, 0, sizeof(AudioImpl));
+    
+    // Apply configuration
+    impl->micBufferSize = (config && config->micBufferSize > 0) ? config->micBufferSize : 16000;
+    impl->volume = (config && config->volume <= 100) ? config->volume : 60;
+    impl->spkPin = (config) ? config->spkPin : 0;
+    impl->enableAEC = (config) ? config->enableAEC : false;
+    impl->micStatus = AudioStatus::IDLE;
+    impl->spkStatus = AudioStatus::IDLE;
+    impl->stopPlayFlag = false;
+    impl->userCallback = nullptr;
+    
+#if defined(AUDIO_CODEC_NAME) && defined(PLATFORM_T5) && defined(ARDUINO_AUDIO_CODEC_NAME)
+    // Register audio hardware
+    TDD_AUDIO_T5AI_T cfg;
     memset(&cfg, 0, sizeof(TDD_AUDIO_T5AI_T));
-
+    
 #if defined(ENABLE_AUDIO_AEC) && (ENABLE_AUDIO_AEC == 1)
     cfg.aec_enable = 1;
 #else
     cfg.aec_enable = 0;
 #endif
-
     cfg.ai_chn = TKL_AI_0;
     cfg.sample_rate = TKL_AUDIO_SAMPLE_16K;
     cfg.data_bits = TKL_AUDIO_DATABITS_16;
     cfg.channel = TKL_AUDIO_CHANNEL_MONO;
-
     cfg.spk_sample_rate = TKL_AUDIO_SAMPLE_16K;
-    cfg.spk_pin = config->pin;
+    cfg.spk_pin = impl->spkPin;
     cfg.spk_pin_polarity = TUYA_GPIO_LEVEL_LOW;
-
-    TUYA_CALL_ERR_RETURN(tdd_audio_register(AUDIO_CODEC_NAME, cfg));
+    
+    static char codec_name[] = ARDUINO_AUDIO_CODEC_NAME;
+    OPERATE_RET rt = tdd_audio_register(codec_name, cfg);
+    if (rt != OPRT_OK) {
+        PR_ERR("Failed to register audio codec: %d", rt);
+        tal_psram_free(_impl);
+        _impl = nullptr;
+        return rt;
+    }
 #endif
-
+    
     // Find and open audio device
-    // static const char audio_name[] = "audio_codec";
-    rt = tdl_audio_find((char*)AUDIO_CODEC_NAME, &sg_audio_hdl);
+    static char audio_name[] = ARDUINO_AUDIO_CODEC_NAME;
+    TDL_AUDIO_HANDLE_T audioHdl = nullptr;
+    rt = tdl_audio_find(audio_name, &audioHdl);
     if (rt != OPRT_OK) {
-        PR_ERR("Failed to find audio device");
+        PR_ERR("Failed to find audio device: %d", rt);
+        tal_psram_free(_impl);
+        _impl = nullptr;
         return rt;
     }
-
-    rt = tdl_audio_open(sg_audio_hdl, audio_frame_callback_internal);
+    
+    impl->audioHandle = audioHdl;
+    
+    rt = tdl_audio_open(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle), 
+                        audioFrameCallbackInternal);
     if (rt != OPRT_OK) {
-        PR_ERR("Failed to open audio device");
+        PR_ERR("Failed to open audio device: %d", rt);
+        tal_psram_free(_impl);
+        _impl = nullptr;
         return rt;
     }
-
-    rt = tdl_audio_get_info(sg_audio_hdl, &sg_audio_info);
-    if (rt != OPRT_OK) {
-        PR_ERR("Failed to get audio info");
+    
+    // Get audio info
+    TDL_AUDIO_INFO_T audioInfo;
+    rt = tdl_audio_get_info(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle), &audioInfo);
+    if (rt != OPRT_OK || audioInfo.frame_size == 0 || audioInfo.sample_tm_ms == 0) {
+        PR_ERR("Failed to get valid audio info");
+        tdl_audio_close(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle));
+        tal_psram_free(_impl);
+        _impl = nullptr;
         return rt;
     }
-
-    if (0 == sg_audio_info.frame_size || 0 == sg_audio_info.sample_tm_ms) {
-        PR_ERR("Invalid audio info");
-        tdl_audio_close(sg_audio_hdl);
-        return OPRT_INVALID_PARM;
-    }
-
-    // Create ring buffer for recording
-    buf_len = (record_duration_ms / sg_audio_info.sample_tm_ms) * sg_audio_info.frame_size;
-    rt = tuya_ring_buff_create(buf_len, (RINGBUFF_TYPE_E)OVERFLOW_PSRAM_STOP_TYPE, &sg_recorder_pcm_rb);
+    
+    impl->frameSize = audioInfo.frame_size;
+    impl->sampleTimeMs = audioInfo.sample_tm_ms;
+    
+    // Create microphone ring buffer
+    TUYA_RINGBUFF_T micBuf = nullptr;
+    rt = tuya_ring_buff_create(impl->micBufferSize, 
+                               (RINGBUFF_TYPE_E)OVERFLOW_PSRAM_STOP_TYPE, 
+                               &micBuf);
     if (rt != OPRT_OK) {
-        PR_ERR("Failed to create ring buffer");
-        tdl_audio_close(sg_audio_hdl);
+        PR_ERR("Failed to create microphone ring buffer: %d", rt);
+        tdl_audio_close(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle));
+        tal_psram_free(_impl);
+        _impl = nullptr;
         return rt;
     }
-
+    impl->micRingBuffer = micBuf;
+    
     // Set volume
-    setVolume(current_volume);
-
-    sg_audio_status = AUDIO_STATUS_IDLE;
-    PR_NOTICE("Audio initialized successfully");
-
-    return OPRT_OK;
-}
-
-// Cleanup
-void Audio::end()
-{
-    if (sg_audio_hdl != NULL) {
-        tdl_audio_close(sg_audio_hdl);
-        sg_audio_hdl = NULL;
-    }
-
-    if (sg_recorder_pcm_rb != NULL) {
-        tuya_ring_buff_free(sg_recorder_pcm_rb);
-        sg_recorder_pcm_rb = NULL;
-    }
-
-    sg_audio_status = AUDIO_STATUS_IDLE;
-    PR_NOTICE("Audio closed");
-}
-
-// Start recording
-OPERATE_RET Audio::startRecord()
-{
-    if (sg_audio_hdl == NULL || sg_recorder_pcm_rb == NULL) {
-        PR_ERR("Audio not initialized");
-        return OPRT_NOT_FOUND;
-    }
-
-    tuya_ring_buff_reset(sg_recorder_pcm_rb);
-    setStatus(AUDIO_STATUS_RECORD_START);
-    setStatus(AUDIO_STATUS_RECORDING);
-    PR_NOTICE("Recording started");
-
-    return OPRT_OK;
-}
-
-// Stop recording
-void Audio::stopRecord()
-{
-    if (sg_audio_status == AUDIO_STATUS_RECORDING) {
-        setStatus(AUDIO_STATUS_RECORD_END);
-        PR_NOTICE("Recording stopped");
-    }
-}
-
-// Play data directly (streaming playback)
-OPERATE_RET Audio::play(uint8_t* data, uint32_t len)
-{
-    if (sg_audio_hdl == NULL || data == NULL || len == 0) {
-        PR_ERR("Invalid parameters for play");
-        return OPRT_INVALID_PARM;
-    }
-
-    if (sg_audio_status != AUDIO_STATUS_PLAYING) {
-        setStatus(AUDIO_STATUS_PLAY_START);
-        setStatus(AUDIO_STATUS_PLAYING);
-    }
-
-    OPERATE_RET rt = tdl_audio_play(sg_audio_hdl, data, len);
-    return rt;
-}
-
-// Playback recorded audio from ring buffer
-OPERATE_RET Audio::playRecordedData()
-{
-    if (sg_recorder_pcm_rb == NULL || sg_audio_hdl == NULL || 
-        sg_audio_info.frame_size == 0) {
-        PR_ERR("Audio not properly initialized");
-        return OPRT_NOT_FOUND;
-    }
-
-    uint32_t data_len = tuya_ring_buff_used_size_get(sg_recorder_pcm_rb);
-    if (data_len == 0) {
-        PR_NOTICE("No data in recorder buffer");
-        return OPRT_OK;
-    }
-
-    uint32_t out_len = 0;
-    uint8_t* frame_buf = (uint8_t*)tkl_system_psram_malloc(sg_audio_info.frame_size);
-    if (frame_buf == NULL) {
-        PR_ERR("Memory allocation failed");
-        return OPRT_MALLOC_FAILED;
-    }
-
-    setStatus(AUDIO_STATUS_PLAY_START);
-    setStatus(AUDIO_STATUS_PLAYING);
-    stop_play_flag = false;
-    PR_NOTICE("Playback started");
-
-    while (!stop_play_flag) {
-        memset(frame_buf, 0, sg_audio_info.frame_size);
-        out_len = 0;
-
-        data_len = tuya_ring_buff_used_size_get(sg_recorder_pcm_rb);
-        if (data_len == 0) {
-            break;
-        }
-
-        if (data_len > sg_audio_info.frame_size) {
-            tuya_ring_buff_read(sg_recorder_pcm_rb, frame_buf, sg_audio_info.frame_size);
-            out_len = sg_audio_info.frame_size;
-        } else {
-            tuya_ring_buff_read(sg_recorder_pcm_rb, frame_buf, data_len);
-            out_len = data_len;
-        }
-
-        tdl_audio_play(sg_audio_hdl, frame_buf, out_len);
-    }
-
-    if (frame_buf != NULL) {
-        tkl_system_psram_free(frame_buf);
-        frame_buf = NULL;
-    }
-
-    setStatus(AUDIO_STATUS_PLAY_END);
-    setStatus(AUDIO_STATUS_IDLE);
-    PR_NOTICE("Playback completed");
+    setVolume(impl->volume);
+    
+    impl->initialized = true;
+    g_audioInstance = this;
+    
+    PR_NOTICE("Audio initialized: mic=%dB, vol=%d", 
+             impl->micBufferSize, impl->volume);
     
     return OPRT_OK;
 }
 
-// Stop playback
-void Audio::stopPlay()
+void Audio::end()
 {
-    stop_play_flag = true;
-    setStatus(AUDIO_STATUS_PLAY_END);
-    setStatus(AUDIO_STATUS_IDLE);
-    PR_NOTICE("Playback stopped");
+    if (_impl == nullptr) {
+        return;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->audioHandle != nullptr) {
+        tdl_audio_close(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle));
+        impl->audioHandle = nullptr;
+    }
+    
+    if (impl->micRingBuffer != nullptr) {
+        tuya_ring_buff_free(static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer));
+        impl->micRingBuffer = nullptr;
+    }
+    
+    tal_psram_free(_impl);
+    _impl = nullptr;
+    
+    PR_NOTICE("Audio closed");
 }
 
-// Set volume
-OPERATE_RET Audio::setVolume(uint8_t volume)
+OPERATE_RET Audio::startRecord()
 {
-    if (sg_audio_hdl == NULL) {
-        return OPRT_NOT_FOUND;
+    if (_impl == nullptr) {
+        PR_ERR("Audio not initialized");
+        return OPRT_COM_ERROR;
     }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micRingBuffer == nullptr) {
+        PR_ERR("Microphone buffer not available");
+        return OPRT_COM_ERROR;
+    }
+    
+    // Reset microphone buffer
+    tuya_ring_buff_reset(static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer));
+    
+    // Update status
+    impl->micStatus = AudioStatus::RECORDING;
+    
+    PR_NOTICE("Recording started");
+    return OPRT_OK;
+}
 
-    if (volume > 100) {
-        volume = 100;
+void Audio::stopRecord()
+{
+    if (_impl == nullptr) {
+        return;
     }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micStatus == AudioStatus::RECORDING) {
+        impl->micStatus = AudioStatus::IDLE;
+        PR_NOTICE("Recording stopped");
+    }
+}
 
-    current_volume = volume;
-    OPERATE_RET rt = tdl_audio_volume_set(sg_audio_hdl, volume);
-    if (rt == OPRT_OK) {
-        PR_NOTICE("Volume set to %d", volume);
+OPERATE_RET Audio::play(const uint8_t* data, uint32_t len)
+{
+    if (_impl == nullptr || data == nullptr || len == 0) {
+        PR_ERR("Invalid parameters for play");
+        return OPRT_INVALID_PARM;
     }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->spkStatus != AudioStatus::PLAYING) {
+        impl->spkStatus = AudioStatus::PLAYING;
+    }
+    
+    OPERATE_RET rt = tdl_audio_play(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle), 
+                                    const_cast<uint8_t*>(data), len);
     return rt;
 }
 
-// Get volume
-uint8_t Audio::getVolume()
+OPERATE_RET Audio::playRecordedData()
 {
-    return current_volume;
+    if (_impl == nullptr) {
+        PR_ERR("Audio not initialized");
+        return OPRT_COM_ERROR;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micRingBuffer == nullptr || impl->frameSize == 0) {
+        PR_ERR("Microphone buffer not properly initialized");
+        return OPRT_COM_ERROR;
+    }
+    
+    TUYA_RINGBUFF_T micBuf = static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer);
+    
+    // Get data length from mic buffer
+    uint32_t micDataLen = tuya_ring_buff_used_size_get(micBuf);
+    if (micDataLen == 0) {
+        PR_NOTICE("No recorded data to play");
+        return OPRT_OK;
+    }
+    
+    // Allocate frame buffer
+    PR_DEBUG("Allocating frame buffer: %d bytes", impl->frameSize);
+    uint8_t* frameBuf = (uint8_t*)tal_psram_malloc(impl->frameSize);
+    if (frameBuf == nullptr) {
+        PR_ERR("Failed to allocate frame buffer");
+        return OPRT_MALLOC_FAILED;
+    }
+    
+    // Start playback
+    impl->spkStatus = AudioStatus::PLAYING;
+    impl->stopPlayFlag = false;
+    
+    PR_NOTICE("Playback started: %d bytes", micDataLen);
+    
+    // Playback loop: read frame from mic buffer and play directly
+    while (!impl->stopPlayFlag) {
+        uint32_t available = tuya_ring_buff_used_size_get(micBuf);
+        if (available == 0) {
+            break;
+        }
+        
+        memset(frameBuf, 0, impl->frameSize);
+        
+        uint32_t toRead = (available > impl->frameSize) ? 
+                         impl->frameSize : available;
+        
+        tuya_ring_buff_read(micBuf, frameBuf, toRead);
+        tdl_audio_play(static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle), 
+                      frameBuf, toRead);
+    }
+    
+    tal_psram_free(frameBuf);
+    
+    impl->spkStatus = AudioStatus::IDLE;
+    
+    PR_NOTICE("Playback completed");
+    return OPRT_OK;
 }
 
-// Get audio status
-Audio::AUDIO_STATUS_E Audio::getStatus()
+void Audio::stopPlay()
 {
-    return sg_audio_status;
+    if (_impl == nullptr) {
+        return;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    impl->stopPlayFlag = true;
+    impl->spkStatus = AudioStatus::IDLE;
+    
+    PR_NOTICE("Playback stopped");
 }
 
-// Set audio status (private)
-void Audio::setStatus(AUDIO_STATUS_E status)
+OPERATE_RET Audio::setVolume(uint8_t volume)
 {
-    sg_audio_status = status;
+    if (_impl == nullptr) {
+        return OPRT_COM_ERROR;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (volume > 100) {
+        volume = 100;
+    }
+    
+    impl->volume = volume;
+    
+    if (impl->audioHandle != nullptr) {
+        OPERATE_RET rt = tdl_audio_volume_set(
+            static_cast<TDL_AUDIO_HANDLE_T>(impl->audioHandle), volume);
+        if (rt == OPRT_OK) {
+            PR_NOTICE("Volume set to %d", volume);
+        }
+        return rt;
+    }
+    
+    return OPRT_OK;
 }
 
-// Check if idle
-bool Audio::isIdle()
+uint8_t Audio::getVolume() const
 {
-    return sg_audio_status == AUDIO_STATUS_IDLE;
-}
-
-// Check if recording
-bool Audio::isRecording()
-{
-    return sg_audio_status == AUDIO_STATUS_RECORDING;
-}
-
-// Check if playing
-bool Audio::isPlaying()
-{
-    return sg_audio_status == AUDIO_STATUS_PLAYING;
-}
-
-// Get recorded data length
-uint32_t Audio::getRecordedDataLen()
-{
-    if (sg_recorder_pcm_rb == NULL) {
+    if (_impl == nullptr) {
         return 0;
     }
-    return tuya_ring_buff_used_size_get(sg_recorder_pcm_rb);
+    
+    return static_cast<AudioImpl*>(_impl)->volume;
 }
 
-// Read recorded data
+AudioStatus Audio::getMicStatus() const
+{
+    if (_impl == nullptr) {
+        return AudioStatus::IDLE;
+    }
+    
+    return static_cast<AudioImpl*>(_impl)->micStatus;
+}
+
+AudioStatus Audio::getSpkStatus() const
+{
+    if (_impl == nullptr) {
+        return AudioStatus::IDLE;
+    }
+    
+    return static_cast<AudioImpl*>(_impl)->spkStatus;
+}
+
+bool Audio::isIdle() const
+{
+    if (_impl == nullptr) {
+        return true;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    return (impl->micStatus == AudioStatus::IDLE && 
+            impl->spkStatus == AudioStatus::IDLE);
+}
+
+bool Audio::isRecording() const
+{
+    if (_impl == nullptr) {
+        return false;
+    }
+    
+    return static_cast<AudioImpl*>(_impl)->micStatus == AudioStatus::RECORDING;
+}
+
+bool Audio::isPlaying() const
+{
+    if (_impl == nullptr) {
+        return false;
+    }
+    
+    return static_cast<AudioImpl*>(_impl)->spkStatus == AudioStatus::PLAYING;
+}
+
+uint32_t Audio::getRecordedDataLen() const
+{
+    if (_impl == nullptr) {
+        return 0;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micRingBuffer == nullptr) {
+        return 0;
+    }
+    
+    return tuya_ring_buff_used_size_get(
+        static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer));
+}
+
 uint32_t Audio::readRecordedData(uint8_t* buffer, uint32_t len)
 {
-    if (sg_recorder_pcm_rb == NULL || buffer == NULL) {
+    if (_impl == nullptr || buffer == nullptr) {
         return 0;
     }
-
-    uint32_t available = tuya_ring_buff_used_size_get(sg_recorder_pcm_rb);
-    uint32_t to_read = (len < available) ? len : available;
-    if (to_read > 0) {
-        tuya_ring_buff_read(sg_recorder_pcm_rb, buffer, to_read);
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micRingBuffer == nullptr) {
+        return 0;
     }
-
-    return to_read;
+    
+    TUYA_RINGBUFF_T micBuf = static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer);
+    
+    uint32_t available = tuya_ring_buff_used_size_get(micBuf);
+    uint32_t toRead = (len < available) ? len : available;
+    
+    if (toRead > 0) {
+        tuya_ring_buff_read(micBuf, buffer, toRead);
+    }
+    
+    return toRead;
 }
 
-// Clear recorded data
 void Audio::clearRecordedData()
 {
-    if (sg_recorder_pcm_rb != NULL) {
-        tuya_ring_buff_reset(sg_recorder_pcm_rb);
+    if (_impl == nullptr) {
+        return;
+    }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    
+    if (impl->micRingBuffer != nullptr) {
+        tuya_ring_buff_reset(static_cast<TUYA_RINGBUFF_T>(impl->micRingBuffer));
         PR_NOTICE("Recorded data cleared");
     }
 }
 
-// Set audio frame callback
-void Audio::setAudioFrameCallback(AudioFrameCallback cb)
+void Audio::setAudioFrameCallback(AudioFrameCallback callback)
 {
-    frame_callback = cb;
-}
-
-// Static callback wrapper (not used directly, kept for compatibility)
-void Audio::audio_frame_callback_wrapper(TDL_AUDIO_FRAME_FORMAT_E type, 
-                                        TDL_AUDIO_STATUS_E status,
-                                        uint8_t* data, 
-                                        uint32_t len)
-{
-    if (g_audio_instance != NULL && g_audio_instance->frame_callback != NULL) {
-        g_audio_instance->frame_callback(data, len);
+    if (_impl == nullptr) {
+        return;
     }
+    
+    AudioImpl* impl = static_cast<AudioImpl*>(_impl);
+    impl->userCallback = callback;
 }

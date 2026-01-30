@@ -33,7 +33,7 @@ void WiFiScanClass::scanDelete()
 
 void * WiFiScanClass::_getScanInfoByIndex(uint32_t i)
 {
-    if (i >= (int)ap_num || !ap_info)
+    if (i >= ap_num || !ap_info)
     {
         return 0;
     }

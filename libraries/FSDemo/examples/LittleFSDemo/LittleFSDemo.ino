@@ -11,7 +11,7 @@
  * @note Make sure LittleFS is properly mounted before running this example
  */
 
-#include "file.h"
+#include "File.h"
 
 VFSFILE fs(LITTLEFS);
 

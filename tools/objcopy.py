@@ -19,7 +19,8 @@ import fileutils
 import packager
 
 def log_config(level=logging.INFO):
-    FORMAT = '[%(levelname)-8s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+    # FORMAT = '[%(levelname)-8s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+    FORMAT = '[%(levelname)-4s][%(asctime)s]%(message)s'
     logging.basicConfig(
         level=level,
         format=FORMAT,

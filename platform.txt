@@ -9,13 +9,13 @@ recipe.hooks.prebuild.1.pattern="{runtime.tools.env-python.path}/python3" -I "{r
 recipe.hooks.prebuild.1.pattern.windows="{runtime.tools.env-python.path}/python.exe" -I "{runtime.platform.path}/tools/prebuild.py" --chip "{build.chip}" --sketch-path "{sketch_path}" --build-path "{build.path}"
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.cmd.c}" {compiler.flags.c} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.c.o.pattern="{compiler.cmd.c}" {compiler.flags.c} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## Compile cpp files
-recipe.cpp.o.pattern="{compiler.cmd.cpp}" {compiler.flags.cpp} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.cpp.o.pattern="{compiler.cmd.cpp}" {compiler.flags.cpp} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## Compile S files
-recipe.S.o.pattern="{compiler.cmd.S}" {compiler.flags.S} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.S.o.pattern="{compiler.cmd.S}" {compiler.flags.S} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## ar
 archive_file_path={build.path}/{archive_file}

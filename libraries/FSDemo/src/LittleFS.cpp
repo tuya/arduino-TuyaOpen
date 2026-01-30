@@ -97,6 +97,10 @@ int createDirRecursive(const char *path) {
                 // Find the position of the last slash in the path
                 size_t len = strlen(path) + 1; // Include the null terminator
                 char *parentPath  = (char*)tal_malloc(len);
+                if (!parentPath) {
+                    PR_ERR("Malloc failed for parentPath");
+                    return -1; // Memory allocation failed
+                }
                 if (parentPath) {
                     strcpy(parentPath, path);
                 }
@@ -108,7 +112,7 @@ int createDirRecursive(const char *path) {
                     if (result != 0) {
                         return result; // Failed to create parent directory
                     }
-                    // 再次尝试创建当前目录
+                    // mkdir again
                     return tal_fs_mkdir(path);
                 } else {
                     tal_free(parentPath);
