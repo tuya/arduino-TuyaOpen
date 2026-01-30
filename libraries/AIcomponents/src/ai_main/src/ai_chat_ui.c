@@ -129,7 +129,7 @@ void ai_chat_ui_handle_event(AI_NOTIFY_EVENT_T *event)
         ai_ui_disp_msg(AI_UI_DISP_CHAT_MODE, (uint8_t *)name, strlen(name));
     }
     break;
-    case AI_USER_EVT_VEDIO_DISPLAY_START:{
+    case AI_USER_EVT_VIDEO_DISPLAY_START:{
         AI_NOTIFY_VIDEO_START_T *video_start = (AI_NOTIFY_VIDEO_START_T *)(event->data);
         if(NULL == video_start) {
             PR_ERR("video start param is null");
@@ -139,7 +139,7 @@ void ai_chat_ui_handle_event(AI_NOTIFY_EVENT_T *event)
         ai_ui_camera_start(video_start->camera_width, video_start->camera_height);
     }
     break;
-    case AI_USER_EVT_VEDIO_DISPLAY_END:
+    case AI_USER_EVT_VIDEO_DISPLAY_END:
         ai_ui_camera_end();
     break;
     default:

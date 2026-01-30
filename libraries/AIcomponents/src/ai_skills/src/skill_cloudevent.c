@@ -42,7 +42,7 @@ static AI_AUDIO_CODEC_E __parse_get_codec_type(char *format)
     } else if (strcmp(format, "oggopus") == 0) {
         fmt = AI_AUDIO_CODEC_OGGOPUS;
     } else {
-        PR_ERR("decode type invald:%s", format);
+        PR_ERR("decode type invalid:%s", format);
         fmt = AI_AUDIO_CODEC_MAX;
     }
 

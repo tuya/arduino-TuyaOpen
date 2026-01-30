@@ -34,7 +34,7 @@ void setup()
     Serial.begin(115200);
     Log.begin();
 
-    //========== Button configuration mothod 1 ==========//
+    //========== Button configuration method 1 ==========//
     ButtonConfig_t cfg;
     cfg.debounceTime = 50;
     cfg.longPressTime = 2000;
@@ -54,7 +54,7 @@ void setup()
     Button0.setEventCallback(BUTTON_EVENT_PRESS_UP, buttonCallback);
     Button0.setEventCallback(BUTTON_EVENT_SINGLE_CLICK, buttonCallback);
 
-    //========== Button configuration mothod 2: ==========//
+    //========== Button configuration method 2: ==========//
     PinConfig_t pinCfg1;
     pinCfg1.pin = BUTTON_PIN1;
     pinCfg1.level = TUYA_GPIO_LEVEL_LOW;

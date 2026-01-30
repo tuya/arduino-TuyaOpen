@@ -164,7 +164,7 @@ static void __record_task(void *arg)
             AI_AUDIO_VAD_STATE_E stat = (tkl_vad_get_status() == TKL_VAD_STATUS_SPEECH) ?\
                                         AI_AUDIO_VAD_START : AI_AUDIO_VAD_STOP;
             if (stat != sg_recorder->vad_flag) {
-                PR_DEBUG("audio input -> wakup flag is %d, auto vad set from %d to %d!",\
+                PR_DEBUG("audio input -> wakeup flag is %d, auto vad set from %d to %d!",\
                           sg_recorder->wakeup_flag, sg_recorder->vad_flag, stat);
                 sg_recorder->vad_flag = stat;
                 __update_vad_flag(sg_recorder->vad_flag);
@@ -296,7 +296,7 @@ OPERATE_RET ai_audio_input_deinit(void)
     /* Stop */
     TUYA_CALL_ERR_LOG(ai_audio_input_stop());
 
-    /* Stop mic, speaker, audio AFE (AEC, NS, VAD) */
+    /* Stop mic, speaker, audio FREE (AEC, NS, VAD) */
     TUYA_CALL_ERR_LOG(tdl_audio_close(sg_audio_hdl));
 
     /* Release resource */
