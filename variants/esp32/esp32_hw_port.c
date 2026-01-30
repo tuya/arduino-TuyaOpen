@@ -58,17 +58,22 @@ TUYA_ADC_NUM_E adcPinToNum(uint8_t pin)
 
 TUYA_PWM_NUM_E pwmPinToNum(uint8_t pin)
 {
-  static uint8_t pwmpin_map[TUYA_PWM_NUM_MAX] = {19, 255, 255, 255, 255, 255};
-  for (uint8_t i = 0; i < TUYA_PWM_NUM_MAX; i++) {
-    if (pwmpin_map[i] == pin) {
-      return (TUYA_PWM_NUM_E)i;
-    }
-    if (pwmpin_map[i] == 255) {
-      pwmpin_map[i] = pin;
-      return (TUYA_PWM_NUM_E)i;
-    }
+  switch (pin) {
+    case 18:
+      return TUYA_PWM_NUM_0;
+    case 19:
+      return TUYA_PWM_NUM_1;
+    case 22:
+      return TUYA_PWM_NUM_2;
+    case 23:  
+      return TUYA_PWM_NUM_3;
+    case 25:
+      return TUYA_PWM_NUM_4;
+    case 26:
+      return TUYA_PWM_NUM_5;
+    default:
+      return TUYA_PWM_NUM_0;
   }
-  return TUYA_PWM_NUM_0;
 }
 
 TUYA_PWM_BASE_CFG_T pwmCfgGet(uint8_t pin)
