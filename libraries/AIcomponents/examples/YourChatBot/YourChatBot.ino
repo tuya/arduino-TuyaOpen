@@ -432,9 +432,9 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
             // Note: This is already handled by aiStateCallback, no need to process here
             break;
             
-        case AI_USER_EVT_VEDIO_DISPLAY_START:
+        case AI_USER_EVT_VIDEO_DISPLAY_START:
             // Video display started
-            Serial.print("\n[EVT] AI_USER_EVT_VEDIO_DISPLAY_START");
+            Serial.print("\n[EVT] AI_USER_EVT_VIDEO_DISPLAY_START");
             if (data != nullptr) {
                 AI_NOTIFY_VIDEO_START_T *videoInfo = (AI_NOTIFY_VIDEO_START_T *)data;
                 Serial.print(" - width:");
@@ -444,9 +444,9 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
             }
             break;
             
-        case AI_USER_EVT_VEDIO_DISPLAY_END:
+        case AI_USER_EVT_VIDEO_DISPLAY_END:
             // Video display stopped, no data
-            Serial.println("\n[EVT] AI_USER_EVT_VEDIO_DISPLAY_END - Video stopped");
+            Serial.println("\n[EVT] AI_USER_EVT_VIDEO_DISPLAY_END - Video stopped");
             break;
             
         default:

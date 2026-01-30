@@ -45,7 +45,7 @@ static TDL_CAMERA_HANDLE_T    sg_camera_hdl = NULL;
 static TDL_CAMERA_CFG_T       sg_camera_cfg;
 static DELAYED_WORK_HANDLE    sg_delayed_work = NULL;
 static JPEG_FRAME_CAPTURE_T   sg_jpeg_capture;
-static AI_VEDIO_DISP_FLUSH_CB sg_disp_flush_cb = NULL;
+static AI_VIDEO_DISP_FLUSH_CB sg_disp_flush_cb = NULL;
 static bool                   sg_is_disp_started = false;
 
 /***********************************************************
@@ -115,7 +115,7 @@ static void __video_init_workq(void *args)
     OPERATE_RET rt = OPRT_OK;
     TDL_CAMERA_CFG_T *cfg = (TDL_CAMERA_CFG_T*)args;
 
-    PR_DEBUG("vedio -> camera init event");
+    PR_DEBUG("video -> camera init event");
 
     /* Find camera device */
     sg_camera_hdl = tdl_camera_find_dev(CAMERA_NAME);
@@ -134,7 +134,7 @@ static void __video_init_workq(void *args)
 @param vi_cfg Video input configuration
 @return OPERATE_RET Operation result
 */
-OPERATE_RET ai_video_init(AI_VEDIO_CFG_T *vi_cfg)
+OPERATE_RET ai_video_init(AI_VIDEO_CFG_T *vi_cfg)
 {   
     OPERATE_RET  rt = OPRT_OK;
 
@@ -298,7 +298,7 @@ OPERATE_RET ai_video_display_start(void)
         .camera_height = sg_camera_cfg.height,
     };
 
-    ai_user_event_notify(AI_USER_EVT_VEDIO_DISPLAY_START, &notify);
+    ai_user_event_notify(AI_USER_EVT_VIDEO_DISPLAY_START, &notify);
 
     sg_is_disp_started = true;
 
@@ -313,7 +313,7 @@ OPERATE_RET ai_video_display_stop(void)
 {
     sg_is_disp_started = false;
 
-    ai_user_event_notify(AI_USER_EVT_VEDIO_DISPLAY_END, NULL);
+    ai_user_event_notify(AI_USER_EVT_VIDEO_DISPLAY_END, NULL);
 
     return OPRT_OK;
 }

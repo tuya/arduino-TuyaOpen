@@ -72,7 +72,7 @@ static AI_AUDIO_CODEC_E _parse_get_codec_type(char *format)
     if (strcmp(format, "mp3") == 0) {
         fmt = AI_AUDIO_CODEC_MP3;
     } else {
-        PR_ERR("decode type invald:%s", format);
+        PR_ERR("decode type invalid:%s", format);
     }
 
     return fmt;
@@ -166,7 +166,7 @@ OPERATE_RET ai_skill_parse_music(cJSON *json, AI_AUDIO_MUSIC_T **music)
     }
 
     if (action == NULL || (strcmp(action->valuestring, "play") == 0 && audio_num == 0)) {
-        PR_WARN("the music list not exsit:%d", audio_num);
+        PR_WARN("the music list not exist:%d", audio_num);
         return -1;
     }
 
