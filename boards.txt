@@ -127,7 +127,7 @@ t5.menu.UploadSpeed.2000000.upload.speed=2000000
 
 t5.menu.Language.en_us=English
 t5.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
-t5.menu.Language.zh_cn=Chinese (¼òÌåÖĞÎÄ)
+t5.menu.Language.zh_cn=Chinese
 t5.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
 
 t5.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
