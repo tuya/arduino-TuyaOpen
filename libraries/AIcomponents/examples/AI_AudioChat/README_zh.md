@@ -26,7 +26,7 @@
 - 稳定的 Wi-Fi 连接
 - 串口控制台用于交互（波特率 115200）
 
-`TUYA_T5AI` 开发板推荐使用 [T5AI-Board 开发套件](https://tuyaopen.ai/zh/docs/hardware-specific/t5-ai-board/overview-t5-ai-board) 进行开发。    
+`TUYA_T5AI` 开发板推荐使用 [T5AI-Board/T5AI-Core 开发套件](https://tuyaopen.ai/zh/docs/hardware-specific/t5-ai-board/overview-t5-ai-board) 进行开发。    
 
 ## 配置说明
 
@@ -35,7 +35,7 @@
 ```cpp
 #define TUYA_DEVICE_UUID "uuidxxxxxxxxxxxxxxxx"
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#define TUYA_PRODUCT_ID "alon7qgyjj8yus74"
+#define TUYA_PRODUCT_ID "9inb01mvjqh5zhhr"
 ```
 
 您可以在 [涂鸦开发者平台](https://tuyaopen.ai/zh/docs/cloud/tuya-cloud/creating-new-product) 创建产品获得 PID 或者使用默认的 PID。
@@ -43,16 +43,6 @@
 关于授权码的获取方式，参考 [授权码获取](https://tuyaopen.ai/zh/docs/quick-start#tuyaopen-%E6%8E%88%E6%9D%83%E7%A0%81%E8%8E%B7%E5%8F%96).
 您必须替换自己的设备 UUID 和 AUTHKEY。
 
-### 对话模式
-
-```cpp
-#define AI_AUDIO_WORK_MODE AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK // choice work mode：provide 4 modes to chat with AI Agent
-
-#define AI_AUDIO_MODE_MANUAL_SINGLE_TALK     1
-#define AI_AUDIO_WORK_VAD_FREE_TALK          2
-#define AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK 3
-#define AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK   4
-```
 
 ## 使用方法
 
@@ -76,12 +66,12 @@ AI: 我很好！有什么可以帮助您的吗？
 
 - **`handleUserInput()`**：处理文本输入并将其发送到 AI 智能体
 - **`tuyaIoTEventCallback()`**：管理 IoT 事件（绑定、MQTT 连接、DP 接收等）
-- **`tuyaAIEventCallback()`**：处理 AI 音频事件（ASR 文本、AI 回复、情绪、唤醒）
-- **`tuyaAIStateCallback()`**：跟踪 AI 音频状态转换
+- **`aiEventCallback()`**：处理 AI 音频事件（ASR 文本、AI 回复、情绪、唤醒）
+- **`aiStateCallback()`**：跟踪 AI 音频状态转换
 
 ### AI 音频工作模式
 
-本示例使用 `AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK` 模式，结合了：
+本示例使用 `WAKE_UP` 模式，结合了：
 - 自动语音识别（ASR）
 - 唤醒词检测
 - 单轮对话处理

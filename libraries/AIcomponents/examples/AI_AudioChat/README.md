@@ -26,7 +26,7 @@ This example demonstrates how to integrate AI audio capabilities into IoT device
 - Stable Wi-Fi connection
 - Serial console for interaction (baud rate 115200)
 
-The `TUYA_T5AI` development board is recommended for use with the [T5AI-Board Development Kit](https://tuyaopen.ai/en/docs/hardware-specific/t5-ai-board/overview-t5-ai-board).    
+The `TUYA_T5AI` development board is recommended for use with the [T5AI-Board/T5AI-Core Development Kit](https://tuyaopen.ai/en/docs/hardware-specific/t5-ai-board/overview-t5-ai-board).    
 
 ## Configuration
 
@@ -35,24 +35,13 @@ Before uploading the code, configure the following parameters:
 ```cpp
 #define TUYA_DEVICE_UUID "uuidxxxxxxxxxxxxxxxx"
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#define TUYA_PRODUCT_ID "alon7qgyjj8yus74"
+#define TUYA_PRODUCT_ID "9inb01mvjqh5zhhr"
 ```
 
 You can obtain a PID by creating a product on the [Tuya Developer Platform](https://tuyaopen.ai/en/docs/cloud/tuya-cloud/creating-new-product) or use the default PID.
 
 For information on obtaining authorization codes, refer to [Authorization Code Acquisition](https://tuyaopen.ai/en/docs/quick-start#tuyaopen-authorization-code-acquisition).
 You must replace with your own device UUID and AUTHKEY.
-
-### Conversation Mode
-
-```cpp
-#define AI_AUDIO_WORK_MODE AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK // choice work mode: provides 4 modes to chat with AI Agent
-
-#define AI_AUDIO_MODE_MANUAL_SINGLE_TALK     1
-#define AI_AUDIO_WORK_VAD_FREE_TALK          2
-#define AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK 3
-#define AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK   4
-```
 
 ## Usage
 
@@ -78,12 +67,12 @@ AI: I'm doing great! Is there anything I can help you with?
 - **`loop()`**: Handles continuous user input from Serial Monitor
 - **`handleUserInput()`**: Processes text input and sends it to the AI agent
 - **`tuyaIoTEventCallback()`**: Manages IoT events (binding, MQTT connection, DP reception, etc.)
-- **`tuyaAIEventCallback()`**: Processes AI audio events (ASR text, AI replies, emotions, wake-up)
-- **`tuyaAIStateCallback()`**: Tracks AI audio state transitions
+- **`aiEventCallback()`**: Processes AI audio events (ASR text, AI replies, emotions, wake-up)
+- **`aiStateCallback()`**: Tracks AI audio state transitions
 
 ### AI Audio Work Mode
 
-This example uses `AI_AUDIO_WORK_ASR_WAKEUP_SINGLE_TALK` mode, which combines:
+This example uses `WAKE_UP` mode, which combines:
 - Automatic Speech Recognition (ASR)
 - Wake word detection
 - Single-turn conversation handling
