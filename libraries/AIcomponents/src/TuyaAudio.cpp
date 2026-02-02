@@ -12,10 +12,10 @@
 #include "tdd_audio.h"
 #include "tdl_audio_manage.h"
 
-#include "ai_main/include/ai_chat_main.h"
+#include "ai_chat_main.h"
 #if defined(ENABLE_COMP_AI_AUDIO) && (ENABLE_COMP_AI_AUDIO == 1)
-#include "ai_audio/include/ai_audio_player.h"
-#include "ai_audio/include/ai_audio_input.h"
+#include "ai_audio_player.h"
+#include "ai_audio_input.h"
 #endif
 
 extern "C" { 
@@ -79,18 +79,6 @@ int __ai_vad_change_evt(void *data)
 }
 
 #endif
-/**
- * @brief Convert AIAlertType_t to internal AI_AUDIO_ALERT_TYPE_E
- * @param type External alert type
- * @return Internal alert type
- */
-static AI_AUDIO_ALERT_TYPE_E _convertToInternalAlert(AIAlertType_t type) {
-    // Direct cast since enum values map 1:1
-    if (type >= AI_ALERT_MAX) {
-        return AI_AUDIO_ALERT_MAX;
-    }
-    return (AI_AUDIO_ALERT_TYPE_E)type;
-}
 
 /***********************************************************
 ***********************TuyaAudioClass Implementation********
@@ -268,10 +256,9 @@ bool TuyaAudioClass::isPlaying() {
 #endif
 }
 
-OPERATE_RET TuyaAudioClass::playAlert(AIAlertType_t type) {
+OPERATE_RET TuyaAudioClass::playAlert(AI_AUDIO_ALERT_TYPE_E type) {
 #if defined(ENABLE_COMP_AI_AUDIO) && (ENABLE_COMP_AI_AUDIO == 1)
-    AI_AUDIO_ALERT_TYPE_E internalType = _convertToInternalAlert(type);
-    return ai_audio_player_alert(internalType);
+    return ai_audio_player_alert(type);
 #else
     return OPRT_NOT_SUPPORTED;
 #endif
@@ -295,11 +282,9 @@ OPERATE_RET TuyaAudioClass::playUrl(const char *url) {
 #endif
 }
 
-OPERATE_RET TuyaAudioClass::playData(uint8_t *data, uint32_t len, AudioCodec_t format) {
+OPERATE_RET TuyaAudioClass::playData(uint8_t *data, uint32_t len, AI_AUDIO_CODEC_E format) {
 #if defined(ENABLE_COMP_AI_AUDIO) && (ENABLE_COMP_AI_AUDIO == 1)
     if (data == nullptr || len == 0) return OPRT_INVALID_PARM;
-    
-    // AudioCodec_t is now AI_AUDIO_CODEC_E, use directly without conversion
     return ai_audio_play_data(format, data, len);
 #else
     return OPRT_NOT_SUPPORTED;

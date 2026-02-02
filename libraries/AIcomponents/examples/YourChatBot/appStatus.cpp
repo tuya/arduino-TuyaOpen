@@ -32,16 +32,16 @@
 static bool gStatusReady = false;
 static TIMER_ID gPrintHeapTimer = NULL;
 static TIMER_ID gDispStatusTimer = NULL;
-static UIWifiStatus_t gLastWifiStatus = UI_WIFI_DISCONNECTED;
+static AI_UI_WIFI_STATUS_E gLastWifiStatus = AI_UI_WIFI_STATUS_DISCONNECTED;
 
 /***********************************************************
 ***********************static declarations******************
 ***********************************************************/
 static void printHeapTimerCallback(TIMER_ID timer_id, void *arg);
 static void dispStatusTimerCallback(TIMER_ID timer_id, void *arg);
-static void updateWifiDisplay(UIWifiStatus_t status);
+static void updateWifiDisplay(AI_UI_WIFI_STATUS_E status);
 static void updateStatusDisplay(const char *status);
-static UIWifiStatus_t getWifiStatus(void);
+static AI_UI_WIFI_STATUS_E getWifiStatus(void);
 /***********************************************************
 ***********************public functions*********************
 ***********************************************************/
@@ -97,7 +97,7 @@ bool appStatusIsReady(void)
     return gStatusReady;
 }
 
-void appStatusUpdateWifi(UIWifiStatus_t status)
+void appStatusUpdateWifi(AI_UI_WIFI_STATUS_E status)
 {
     gLastWifiStatus = status;
     updateWifiDisplay(status);
@@ -108,7 +108,7 @@ void appStatusUpdateText(const char *status)
     updateStatusDisplay(status);
 }
 
-void appStatusUpdateMode(AIChatMode_t mode)
+void appStatusUpdateMode(AI_CHAT_MODE_E mode)
 {
     appDisplaySetMode((int)mode);
 }
@@ -144,7 +144,7 @@ static void dispStatusTimerCallback(TIMER_ID timer_id, void *arg)
     (void)arg;
     
     // Update WiFi status if changed
-    UIWifiStatus_t currentStatus = getWifiStatus();
+    AI_UI_WIFI_STATUS_E currentStatus = getWifiStatus();
     if (currentStatus != gLastWifiStatus) {
         gLastWifiStatus = currentStatus;
         updateWifiDisplay(currentStatus);
@@ -156,16 +156,16 @@ static void dispStatusTimerCallback(TIMER_ID timer_id, void *arg)
  * @brief Get current WiFi status based on RSSI using Arduino WiFi library
  * @return WiFi status enum
  */
-static UIWifiStatus_t getWifiStatus(void)
+static AI_UI_WIFI_STATUS_E getWifiStatus(void)
 {
-    UIWifiStatus_t wifiStatus = UI_WIFI_DISCONNECTED;
+    AI_UI_WIFI_STATUS_E wifiStatus = AI_UI_WIFI_STATUS_DISCONNECTED;
     
     // Use Arduino WiFi library
     WF_STATION_STAT_E wfStatus = WiFi.status();
     if (wfStatus == WSS_CONN_SUCCESS || wfStatus == WSS_GOT_IP) {
-        wifiStatus = UI_WIFI_GOOD;
+        wifiStatus = AI_UI_WIFI_STATUS_GOOD;
     } else {
-        wifiStatus = UI_WIFI_DISCONNECTED;
+        wifiStatus = AI_UI_WIFI_STATUS_DISCONNECTED;
     }
     
     return wifiStatus;
@@ -175,7 +175,7 @@ static UIWifiStatus_t getWifiStatus(void)
  * @brief Update WiFi display based on UI type
  * @param status WiFi status to display
  */
-static void updateWifiDisplay(UIWifiStatus_t status)
+static void updateWifiDisplay(AI_UI_WIFI_STATUS_E status)
 {
     appDisplaySetWifi(status);
 }

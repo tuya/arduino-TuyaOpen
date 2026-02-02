@@ -8,18 +8,9 @@
 #ifndef __TUYA_MCP_H_
 #define __TUYA_MCP_H_
 
-#include "TuyaAI_Types.h"
-
-// C++ standard library
-#include <utility>
-#include <cstddef>
-#include <cstdarg>
-
 // Include MCP server header for C API
 #if defined(ENABLE_COMP_AI_MCP) && (ENABLE_COMP_AI_MCP == 1)
-extern "C" {
-#include "ai_mcp/include/ai_mcp_server.h"
-}
+#include "ai_mcp_server.h"
 #endif
 
 /***********************************************************

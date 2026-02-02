@@ -47,8 +47,8 @@
 ***********************static declarations******************
 ***********************************************************/
 static void tuyaIoTEventCallback(tuya_event_msg_t *event);
-static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg);
-static void aiStateCallback(AIState_t state);
+static void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg);
+static void aiStateCallback(AI_MODE_STATE_E state);
 static void handleUserInput();
 static void onButtonEvent(char *name, ButtonEvent_t event, void *arg);
 /***********************************************************
@@ -90,7 +90,7 @@ void setup()
     TuyaIoT.begin(TUYA_PRODUCT_ID, PROJECT_VERSION);
 
     // Initialize TuyaAI core
-    AIConfig_t aiConfig = {AI_MODE_WAKEUP, 70, aiEventCallback, aiStateCallback, NULL};
+    AIConfig_t aiConfig = {AI_CHAT_MODE_WAKEUP, 70, aiEventCallback, aiStateCallback, NULL};
     if (OPRT_OK != TuyaAI.begin(aiConfig)) {
         PR_ERR("TuyaAI initialization failed");
     }
@@ -132,7 +132,7 @@ void loop()
  * @brief AI event callback
  * Handle AI events like ASR results, TTS, emotions, etc.
  */
-static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg)
+static void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg)
 {
     // PR_NOTICE("AI Event: %d", event);
     switch (event) {
@@ -178,17 +178,17 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
  * @brief AI state change callback
  * Handle state transitions and update display
  */
-static void aiStateCallback(AIState_t state)
+static void aiStateCallback(AI_MODE_STATE_E state)
 {
     const char *stateStr;
     switch (state) {
-        case AI_STATE_IDLE:      stateStr = "AI IDLE"; break;
-        case AI_STATE_STANDBY:   stateStr = STANDBY; break;
-        case AI_STATE_LISTENING: stateStr = LISTENING; break;
-        case AI_STATE_UPLOADING: stateStr = "Uploading"; break;
-        case AI_STATE_THINKING:  stateStr = "Thinking"; break;
-        case AI_STATE_SPEAKING:  stateStr = SPEAKING; break;
-        default:                 stateStr = "AI IDLE"; break;
+        case AI_MODE_STATE_IDLE:      stateStr = "AI IDLE"; break;
+        case AI_MODE_STATE_INIT:      stateStr = STANDBY; break;
+        case AI_MODE_STATE_LISTEN:    stateStr = LISTENING; break;
+        case AI_MODE_STATE_UPLOAD:    stateStr = "Uploading"; break;
+        case AI_MODE_STATE_THINK:     stateStr = "Thinking"; break;
+        case AI_MODE_STATE_SPEAK:     stateStr = SPEAKING; break;
+        default:                      stateStr = "AI IDLE"; break;
     }
     
     PR_DEBUG("AI State: %s", stateStr);
@@ -248,7 +248,7 @@ static void tuyaIoTEventCallback(tuya_event_msg_t *event)
                 PR_INFO("Device Reset!");
                 tal_system_reset();
             }
-            TuyaAI.Audio.playAlert(AI_ALERT_NETWORK_CFG);
+            TuyaAI.Audio.playAlert(AI_AUDIO_ALERT_NETWORK_CFG);
             break;
 
         case TUYA_EVENT_DIRECT_MQTT_CONNECTED:
@@ -360,13 +360,13 @@ static void onButtonEvent(char *name, ButtonEvent_t event, void *arg)
         TuyaAI.interruptChat();
         
         // Switch to next mode
-        AIChatMode_t nextMode = TuyaAI.nextChatMode();
+        AI_CHAT_MODE_E nextMode = TuyaAI.nextChatMode();
         PR_DEBUG("Switching to mode: %d", nextMode);
         
         uint8_t volume = TuyaAI.getVolume();
         TuyaAI.saveModeConfig(nextMode, volume);
 
-        AIAlertType_t alert = (AIAlertType_t)(AI_ALERT_HOLD_TALK + (int)nextMode);
+        AI_AUDIO_ALERT_TYPE_E alert = (AI_AUDIO_ALERT_TYPE_E)(AI_AUDIO_ALERT_LONG_KEY_TALK + (int)nextMode);
         TuyaAI.Audio.playAlert(alert);
         
         PR_DEBUG("Mode switched to: %d, alert: %d", nextMode, alert);
