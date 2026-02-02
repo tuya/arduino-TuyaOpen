@@ -8,11 +8,10 @@
 #define __TUYA_SKILL_H_
 
 #include "tuya_cloud_types.h"
-#include "TuyaAI_Types.h"
+#include "skill_emotion.h"
+#include "skill_music_story.h"
+#include "ai_audio_player.h"
 
-// Include C skill headers for type definitions
-#include "ai_skills/include/skill_emotion.h"
-#include "ai_audio/include/ai_audio_player.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,18 +43,6 @@ typedef enum {
     SKILL_TYPE_CLOUD_EVENT,
 } SkillType_t;
 
-/** @brief Emotion data (typedef from AI_AGENT_EMO_T) */
-typedef AI_AGENT_EMO_T SkillEmotion_t;
-
-/** @brief Music source info (typedef from AI_MUSIC_SRC_T) */
-typedef AI_MUSIC_SRC_T SkillMusicSrc_t;
-
-/** @brief Music/Story data (typedef from AI_AUDIO_MUSIC_T) */
-typedef AI_AUDIO_MUSIC_T SkillMusic_t;
-
-/** @brief Alert type (typedef from AI_AUDIO_ALERT_TYPE_E) */
-typedef AI_AUDIO_ALERT_TYPE_E SkillAlertType_t;
-
 /** @brief Play control data */
 typedef struct {
     char action[16];
@@ -73,8 +60,8 @@ typedef struct {
     SkillType_t type;
     char code[32];
     union {
-        SkillEmotion_t *emotion;
-        SkillMusic_t *music;
+        AI_AGENT_EMO_T *emotion;         /**< Emotion data (from skill_emotion.h) */
+        AI_AUDIO_MUSIC_T *music;         /**< Music/Story data (from ai_audio_player.h) */
         SkillPlayControl_t playControl;
         SkillCloudEvent_t cloudEvent;
     };

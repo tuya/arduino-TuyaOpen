@@ -95,13 +95,13 @@ static void onButtonEvent(char *name, ButtonEvent_t event, void *arg)
         TuyaAI.interruptChat();
         
         // Switch to next mode
-        AIChatMode_t nextMode = TuyaAI.nextChatMode();
+        AI_CHAT_MODE_E nextMode = TuyaAI.nextChatMode();
         PR_DEBUG("Switching to mode: %d", nextMode);
         
         uint8_t volume = TuyaAI.getVolume();
         TuyaAI.saveModeConfig(nextMode, volume);
 
-        AIAlertType_t alert = (AIAlertType_t)(AI_ALERT_HOLD_TALK + (int)nextMode);
+        AI_AUDIO_ALERT_TYPE_E alert = (AI_AUDIO_ALERT_TYPE_E)(AI_AUDIO_ALERT_LONG_KEY_TALK + (int)nextMode);
         TuyaAI.Audio.playAlert(alert);
         TuyaAI.Audio.startRecording();
         

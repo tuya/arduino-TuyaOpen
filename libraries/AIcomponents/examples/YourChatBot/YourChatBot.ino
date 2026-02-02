@@ -40,8 +40,8 @@
 ***********************static declarations******************
 ***********************************************************/
 static void tuyaIoTEventCallback(tuya_event_msg_t *event);
-static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg);
-static void aiStateCallback(AIState_t state);
+static void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg);
+static void aiStateCallback(AI_MODE_STATE_E state);
 static void handleUserInput();
 /***********************************************************
 ***********************variable define**********************
@@ -81,7 +81,7 @@ void setup()
     TuyaIoT.begin(TUYA_PRODUCT_ID, PROJECT_VERSION);
     
     // Initialize TuyaAI core
-    AIConfig_t aiConfig = {AI_MODE_WAKEUP, 70, aiEventCallback, aiStateCallback, NULL};
+    AIConfig_t aiConfig = {AI_CHAT_MODE_WAKEUP, 70, aiEventCallback, aiStateCallback, NULL};
     if (OPRT_OK != TuyaAI.begin(aiConfig)) {
         PR_ERR("TuyaAI initialization failed");
     }
@@ -143,7 +143,7 @@ void loop()
  * Handle AI events like ASR results, TTS, emotions, etc.
  * Directly updates display using appDisplay functions (pure LVGL)
  */
-static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg)
+static void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg)
 {
     switch (event) {
         case AI_USER_EVT_IDLE:
@@ -264,7 +264,7 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
             // Emotion detected from text tags
             Serial.print("\n[EVT] AI_USER_EVT_EMOTION");
             if (data != nullptr) {
-                SkillEmotion_t *emo = (SkillEmotion_t *)data;
+                AI_AGENT_EMO_T *emo = (AI_AGENT_EMO_T *)data;
                 Serial.print(" name:");
                 Serial.print(emo->name ? emo->name : "null");
                 
@@ -283,7 +283,7 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
             // Emotion from LLM response
             Serial.print("\n[EVT] AI_USER_EVT_LLM_EMOTION");
             if (data != nullptr) {
-                SkillEmotion_t *emo = (SkillEmotion_t *)data;
+                AI_AGENT_EMO_T *emo = (AI_AGENT_EMO_T *)data;
                 Serial.print(" name:");
                 Serial.print(emo->name ? emo->name : "null");
                 
@@ -408,7 +408,7 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
         case AI_USER_EVT_PLAY_ALERT:
             // Alert notification from cloud
             {
-                SkillAlertType_t alertType = (SkillAlertType_t)(intptr_t)data;
+                AI_AUDIO_ALERT_TYPE_E alertType = (AI_AUDIO_ALERT_TYPE_E)(intptr_t)data;
                 Serial.print("\n[EVT] AI_USER_EVT_PLAY_ALERT - type:");
                 Serial.print(alertType);
             }
@@ -426,27 +426,7 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
             break;
             
         case AI_USER_EVT_MODE_STATE_UPDATE:
-            // Chat mode state updated (handled by aiStateCallback)
-            // Data: AI_MODE_STATE_E value (cast from void*)
-            // States: IDLE, LISTEN, UPLOAD, THINK, SPEAK
             // Note: This is already handled by aiStateCallback, no need to process here
-            break;
-            
-        case AI_USER_EVT_VIDEO_DISPLAY_START:
-            // Video display started
-            Serial.print("\n[EVT] AI_USER_EVT_VIDEO_DISPLAY_START");
-            if (data != nullptr) {
-                AI_NOTIFY_VIDEO_START_T *videoInfo = (AI_NOTIFY_VIDEO_START_T *)data;
-                Serial.print(" - width:");
-                Serial.print(videoInfo->camera_width);
-                Serial.print(" height:");
-                Serial.print(videoInfo->camera_height);
-            }
-            break;
-            
-        case AI_USER_EVT_VIDEO_DISPLAY_END:
-            // Video display stopped, no data
-            Serial.println("\n[EVT] AI_USER_EVT_VIDEO_DISPLAY_END - Video stopped");
             break;
             
         default:
@@ -460,17 +440,17 @@ static void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *
  * @brief AI state change callback
  * Handle state transitions and update display
  */
-static void aiStateCallback(AIState_t state)
+static void aiStateCallback(AI_MODE_STATE_E state)
 {
     const char *stateStr;
     switch (state) {
-        case AI_STATE_IDLE:      stateStr = "AI IDLE"; break;
-        case AI_STATE_STANDBY:   stateStr = STANDBY; break;
-        case AI_STATE_LISTENING: stateStr = LISTENING; break;
-        case AI_STATE_UPLOADING: stateStr = "Uploading"; break;
-        case AI_STATE_THINKING:  stateStr = "Thinking"; break;
-        case AI_STATE_SPEAKING:  stateStr = SPEAKING; break;
-        default:                 stateStr = "AI IDLE"; break;
+        case AI_MODE_STATE_IDLE:      stateStr = STANDBY; break;
+        case AI_MODE_STATE_INIT:      stateStr = INITIALIZING; break;
+        case AI_MODE_STATE_LISTEN:    stateStr = LISTENING; break;
+        case AI_MODE_STATE_UPLOAD:    stateStr = "Uploading"; break;
+        case AI_MODE_STATE_THINK:     stateStr = "Thinking"; break;
+        case AI_MODE_STATE_SPEAK:     stateStr = SPEAKING; break;
+        default:                      stateStr = STANDBY; break;
     }
     
     PR_DEBUG("AI State: %s", stateStr);
@@ -478,12 +458,12 @@ static void aiStateCallback(AIState_t state)
     
 #if ENABLE_AUDIO_RECORDING
     // Start MIC recording when entering LISTENING state
-    if (state == AI_STATE_LISTENING) {
+    if (state == AI_MODE_STATE_LISTEN) {
         appMicRecordStart();
     }
     // Stop MIC recording when leaving LISTENING state
-    else if (state == AI_STATE_UPLOADING || state == AI_STATE_THINKING || 
-             state == AI_STATE_IDLE || state == AI_STATE_STANDBY) {
+    else if (state == AI_MODE_STATE_UPLOAD || state == AI_MODE_STATE_THINK || 
+             state == AI_MODE_STATE_IDLE || state == AI_MODE_STATE_INIT) {
         appMicRecordStop();
     }
 #endif
@@ -519,7 +499,7 @@ OPERATE_RET audioDpObjProc(dp_obj_recv_t *dpobj) {
           TuyaAI.setVolume(volume);
           char volume_str[20] = { 0 };
           snprintf(volume_str, sizeof(volume_str), "%s%d", VOLUME, volume);
-          TuyaAI.UI.displayMessage(UI_DISP_NOTIFICATION, (uint8_t *)volume_str, strlen(volume_str));
+          TuyaAI.UI.displayMessage(AI_UI_DISP_NOTIFICATION, (uint8_t *)volume_str, strlen(volume_str));
           break;
         }
       default:
@@ -544,7 +524,7 @@ static void tuyaIoTEventCallback(tuya_event_msg_t *event)
                 PR_INFO("Device Reset!");
                 tal_system_reset();
             }
-            TuyaAI.Audio.playAlert(AI_ALERT_NETWORK_CFG);
+            TuyaAI.Audio.playAlert(AI_AUDIO_ALERT_NETWORK_CFG);
             break;
 
         case TUYA_EVENT_DIRECT_MQTT_CONNECTED:
@@ -559,7 +539,7 @@ static void tuyaIoTEventCallback(tuya_event_msg_t *event)
             static bool gFirstConnect = true;
             if (gFirstConnect) {
                 gFirstConnect = false;
-                appDisplaySetWifi(UI_WIFI_GOOD);
+                appDisplaySetWifi(AI_UI_WIFI_STATUS_GOOD);
                 aiAudioVolumUpload();
             }
             break;
@@ -567,7 +547,7 @@ static void tuyaIoTEventCallback(tuya_event_msg_t *event)
         case TUYA_EVENT_MQTT_DISCONNECT:
             PR_INFO("Device MQTT Disconnected!");
             tal_event_publish(EVENT_MQTT_DISCONNECTED, NULL);
-            appDisplaySetWifi(UI_WIFI_DISCONNECTED);
+            appDisplaySetWifi(AI_UI_WIFI_STATUS_DISCONNECTED);
             break;
 
             /* _recv_buf upgrade request */

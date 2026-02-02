@@ -63,7 +63,7 @@ Before uploading, configure the following parameters:
 
 ```cpp
 AIConfig_t aiConfig = {
-	.chatMode = AI_MODE_WAKEUP,  // Default: wake word mode
+	.chatMode = AI_CHAT_MODE_WAKEUP,  // Default: wake word mode
 	.volume = 70,
 	.eventCb = aiEventCallback,
 	.stateCb = aiStateCallback,
@@ -74,10 +74,10 @@ AIConfig_t aiConfig = {
 Available modes:
 | Mode | Description |
 |------|-------------|
-| `AI_MODE_HOLD` | Hold the button to talk |
-| `AI_MODE_ONESHOT` | Click once for a single turn |
-| `AI_MODE_WAKEUP` | Wake word + single turn |
-| `AI_MODE_FREE` | Free talk |
+| `AI_CHAT_MODE_HOLD` | Hold the button to talk |
+| `AI_CHAT_MODE_ONESHOT` | Click once for a single turn |
+| `AI_CHAT_MODE_WAKEUP` | Wake word + single turn |
+| `AI_CHAT_MODE_FREE` | Free talk |
 
 ### UI Type
 Configure in `appDisplay.h`:
@@ -117,7 +117,7 @@ TuyaAI              // Main controller
 ### Event Callback
 
 ```cpp
-void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg) {
+void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg) {
 	switch (event) {
 		case AI_USER_EVT_ASR_OK:      // ASR success
 		case AI_USER_EVT_TTS_START:   // TTS starts

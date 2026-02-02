@@ -8,11 +8,14 @@
 #ifndef __TUYA_UI_H_
 #define __TUYA_UI_H_
 
-#include "TuyaAI_Types.h"
+#include "tuya_cloud_types.h"
+#include "ai_ui_manage.h"
+#include "ai_manage_mode.h"
+
 
 #if defined(ENABLE_LIBLVGL) && (ENABLE_LIBLVGL == 1)
 #include "lvgl.h"
-#include "ai_ui/font/font_awesome_symbols.h"
+#include "font_awesome_symbols.h"
 #endif
 
 /***********************************************************
@@ -21,7 +24,7 @@
 // UI type selection macros
 #define BOT_UI_USER         0       /**< User custom UI (appDisplay.cpp) */
 #define BOT_UI_WECHAT       1       /**< WeChat UI */
-#define BOT_UI_CHATBOT      2       /**< Chatbot UI */
+// #define BOT_UI_CHATBOT      2       /**< Chatbot UI */
 // #define BOT_UI_OLED         3       /**< OLED display UI */
 
 /***********************************************************
@@ -29,41 +32,12 @@
 ***********************************************************/
 
 /**
- * @brief UI Display Types
- */
-typedef enum {
-    UI_DISP_USER_MSG = 0,           /**< User message */
-    UI_DISP_AI_MSG,                 /**< AI message */
-    UI_DISP_AI_MSG_STREAM_START,    /**< AI stream start */
-    UI_DISP_AI_MSG_STREAM_DATA,     /**< AI stream data */
-    UI_DISP_AI_MSG_STREAM_END,      /**< AI stream end */
-    UI_DISP_AI_MSG_STREAM_INTERRUPT,/**< AI stream abort */
-    UI_DISP_SYSTEM_MSG,             /**< System message */
-    UI_DISP_EMOTION,                /**< Emotion display */
-    UI_DISP_STATUS,                 /**< Status display */
-    UI_DISP_NOTIFICATION,           /**< Notification */
-    UI_DISP_NETWORK,                /**< Network status */
-    UI_DISP_CHAT_MODE,              /**< Chat mode display */
-    UI_DISP_MAX
-} UIDisplayType_t;
-
-/**
- * @brief WiFi status for UI display
- */
-typedef enum {
-    UI_WIFI_DISCONNECTED = 0,   /**< WiFi disconnected */
-    UI_WIFI_GOOD,               /**< WiFi signal good */
-    UI_WIFI_FAIR,               /**< WiFi signal fair */
-    UI_WIFI_WEAK                /**< WiFi signal weak */
-} UIWifiStatus_t;
-
-/**
  * @brief UI display callback function type (for custom UI)
- * @param type Display message type
+ * @param type Display message type (AI_UI_DISP_TYPE_E from ai_ui_manage.h)
  * @param data Message data
  * @param len  Message length
  */
-typedef void (*UIDisplayCallback_t)(UIDisplayType_t type, uint8_t *data, int len);
+typedef void (*UIDisplayCallback_t)(AI_UI_DISP_TYPE_E type, uint8_t *data, int len);
 
 /**
  * @brief UI Configuration Structure
@@ -127,12 +101,12 @@ public:
     
     /**
      * @brief Display message
-     * @param type Display type
+     * @param type Display type (AI_UI_DISP_TYPE_E from ai_ui_manage.h)
      * @param data Message data
      * @param len  Message length
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET displayMessage(UIDisplayType_t type, uint8_t *data, int len);
+    OPERATE_RET displayMessage(AI_UI_DISP_TYPE_E type, uint8_t *data, int len);
     
     /**
      * @brief Display text message
@@ -158,17 +132,17 @@ public:
     
     /**
      * @brief Display WiFi status
-     * @param status WiFi status enum
+     * @param status WiFi status (AI_UI_WIFI_STATUS_E from ai_ui_manage.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET displayWifiStatus(UIWifiStatus_t status);
+    OPERATE_RET displayWifiStatus(AI_UI_WIFI_STATUS_E status);
     
     /**
      * @brief Display chat mode
-     * @param mode Chat mode
+     * @param mode Chat mode (AI_CHAT_MODE_E from ai_manage_mode.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET displayChatMode(AIChatMode_t mode);
+    OPERATE_RET displayChatMode(AI_CHAT_MODE_E mode);
 
     /**
      * @brief Enable LVGL update
@@ -219,10 +193,10 @@ public:
     
     /**
      * @brief Get WiFi icon by status
-     * @param status WiFi status enum
+     * @param status WiFi status (AI_UI_WIFI_STATUS_E from ai_ui_manage.h)
      * @return Icon string for WiFi status
      */
-    char *getWifiIcon(UIWifiStatus_t status);
+    char *getWifiIcon(AI_UI_WIFI_STATUS_E status);
 #endif
 
 private:

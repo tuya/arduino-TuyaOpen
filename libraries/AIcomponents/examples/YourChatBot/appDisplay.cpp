@@ -207,7 +207,7 @@ void appDisplaySetStatus(const char *status)
 #if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     lv_label_set_text(sg_lblStatus, status);
 #else
-    // TuyaAI.UI.displayMessage(UI_DISP_STATUS, (uint8_t *)status, strlen(status));
+    TuyaAI.UI.displayMessage(AI_UI_DISP_STATUS, (uint8_t *)status, strlen(status));
     PR_NOTICE("Status: [%s]", status);
 #endif
 }
@@ -222,15 +222,15 @@ void appDisplaySetMode(int mode)
 #if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     const char *modeStr;
     switch (mode) {
-        case AI_MODE_HOLD:    modeStr = HOLD_TALK; break;
-        case AI_MODE_ONESHOT: modeStr = TRIG_TALK; break;
-        case AI_MODE_WAKEUP:  modeStr = WAKEUP_TALK; break;
-        case AI_MODE_FREE:    modeStr = FREE_TALK; break;
-        default:              modeStr = "---"; break;
+        case AI_CHAT_MODE_HOLD:     modeStr = HOLD_TALK; break;
+        case AI_CHAT_MODE_ONE_SHOT: modeStr = TRIG_TALK; break;
+        case AI_CHAT_MODE_WAKEUP:   modeStr = WAKEUP_TALK; break;
+        case AI_CHAT_MODE_FREE:     modeStr = FREE_TALK; break;
+        default:                    modeStr = "---"; break;
     }
     lv_label_set_text(sg_lblMode, modeStr);
 #else
-    // TuyaAI.UI.displayMessage(UI_DISP_CHAT_MODE, (uint8_t *)&mode, sizeof(AIChatMode_t));
+    TuyaAI.UI.displayMessage(AI_UI_DISP_CHAT_MODE, (uint8_t *)&mode, sizeof(AI_CHAT_MODE_E));
     PR_NOTICE("Mode: [%d]", mode);
 #endif
 }
@@ -239,7 +239,7 @@ void appDisplaySetMode(int mode)
  * @brief Set WiFi status indicator
  * @param status WiFi status (0=disconnected, 1=good, 2=fair, 3=weak)
  */
-void appDisplaySetWifi(UIWifiStatus_t status)
+void appDisplaySetWifi(AI_UI_WIFI_STATUS_E status)
 {
     if (!gReady) return;
 #if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
@@ -248,7 +248,7 @@ void appDisplaySetWifi(UIWifiStatus_t status)
         lv_label_set_text(sg_lblWifi, icon);
     }
 #else
-    TuyaAI.UI.displayMessage(UI_DISP_NETWORK, (uint8_t *)&status, sizeof(status));
+    TuyaAI.UI.displayMessage(AI_UI_DISP_NETWORK, (uint8_t *)&status, sizeof(status));
 #endif
 }
 
@@ -296,7 +296,7 @@ static void _createUI(void)
     lv_obj_set_style_text_font(sg_lblWifi, iconFont, 0);
     lv_obj_set_style_text_color(sg_lblWifi, lv_color_hex(CLR_TEXT_PRIMARY), 0);
     lv_obj_align(sg_lblWifi, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(sg_lblWifi, TuyaAI.UI.getWifiIcon(UI_WIFI_DISCONNECTED));
+    lv_label_set_text(sg_lblWifi, TuyaAI.UI.getWifiIcon(AI_UI_WIFI_STATUS_DISCONNECTED));
     
     // ============ Status Box ============
     sg_statusBox = lv_obj_create(sg_screen);

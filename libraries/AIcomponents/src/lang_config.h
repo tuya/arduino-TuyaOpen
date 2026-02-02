@@ -3,6 +3,7 @@
 #define __LANGUAGE_CONFIG_H__
 
 #if defined(LANG_CONF) && (LANG_CONF == 0)
+
 #ifndef zh_cn
     #define zh_cn
 #endif

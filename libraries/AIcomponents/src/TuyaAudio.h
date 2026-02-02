@@ -8,24 +8,9 @@
 #ifndef __TUYA_AUDIO_H_
 #define __TUYA_AUDIO_H_
 #include "tuya_cloud_types.h"
-#include "TuyaAI_Types.h"
 
-// Include vendor audio player header for AI_AUDIO_CODEC_E
-extern "C" {
 #include "svc_ai_player.h"
-}
-
-/***********************************************************
-***********************typedef define***********************
-***********************************************************/
-
-/**
- * @brief Audio codec formats
- * @note Directly uses vendor's AI_AUDIO_CODEC_E enumeration from svc_ai_player.h
- *       Available codecs: AI_AUDIO_CODEC_MP3, AI_AUDIO_CODEC_WAV, 
- *       AI_AUDIO_CODEC_SPEEX, AI_AUDIO_CODEC_OPUS, AI_AUDIO_CODEC_OGGOPUS
- */
-typedef AI_AUDIO_CODEC_E AudioCodec_t;
+#include "ai_audio_player.h"
 
 /***********************************************************
 ***********************class definition*********************
@@ -139,10 +124,10 @@ public:
     
     /**
      * @brief Play alert sound
-     * @param type Alert type to play
+     * @param type Alert type to play (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET playAlert(AIAlertType_t type);
+    OPERATE_RET playAlert(AI_AUDIO_ALERT_TYPE_E type);
     
     /**
      * @brief Play audio from URL
@@ -155,10 +140,10 @@ public:
      * @brief Play audio from memory buffer
      * @param data Audio data buffer
      * @param len  Data length
-     * @param format Audio format
+     * @param format Audio format (AI_AUDIO_CODEC_E from svc_ai_player.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET playData(uint8_t *data, uint32_t len, AudioCodec_t format = AI_AUDIO_CODEC_MP3);
+    OPERATE_RET playData(uint8_t *data, uint32_t len, AI_AUDIO_CODEC_E format = AI_AUDIO_CODEC_MP3);
     
     //==========================================================================
     // Recording Control
