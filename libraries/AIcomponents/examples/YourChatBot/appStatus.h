@@ -10,8 +10,7 @@
 
 #include <stdbool.h>
 #include "tuya_cloud_types.h"
-#include "TuyaUI.h"
-#include "TuyaAI_Types.h"
+#include "TuyaAI.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +37,7 @@ bool appStatusIsReady(void);
  * @brief Update WiFi status display
  * @param status WiFi status enum
  */
-void appStatusUpdateWifi(UIWifiStatus_t status);
+void appStatusUpdateWifi(AI_UI_WIFI_STATUS_E status);
 
 /**
  * @brief Update status text display
@@ -50,7 +49,7 @@ void appStatusUpdateText(const char *status);
  * @brief Update chat mode display
  * @param mode Chat mode enum
  */
-void appStatusUpdateMode(AIChatMode_t mode);
+void appStatusUpdateMode(AI_CHAT_MODE_E mode);
 
 #ifdef __cplusplus
 }

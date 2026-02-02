@@ -28,11 +28,61 @@
 #include "board_com_api.h"
 
 // Include all sub-component headers
-#include "TuyaAI_Types.h"
 #include "TuyaUI.h"
 #include "TuyaAudio.h"
 #include "TuyaMCP.h"
 #include "TuyaSkill.h"
+/***********************************************************
+************************macro define************************
+***********************************************************/
+#define TUYA_AI_DEFAULT_VOLUME      70
+#define TUYA_AI_MAX_VOLUME          100
+#define TUYA_AI_MIN_VOLUME          0
+
+/***********************************************************
+***********************typedef define***********************
+***********************************************************/
+
+/***********************************************************
+***********************callback types***********************
+***********************************************************/
+
+/**
+ * @brief Event callback function type
+ * @param event Event type
+ * @param data  Event data pointer (type depends on event)
+ * @param len   Event data length
+ * @param arg   User argument passed during callback registration
+ */
+typedef void (*AIEventCallback_t)(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg);
+
+/**
+ * @brief State change callback function type
+ * @param state Current AI state (AI_MODE_STATE_E from ai_manage_mode.h)
+ */
+typedef void (*AIStateCallback_t)(AI_MODE_STATE_E state);
+
+/**
+ * @brief Custom alert callback function type
+ * @param type Alert type to be played (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
+ * @return 0 if custom handling succeeded, other to use default
+ */
+typedef int (*AIAlertCallback_t)(AI_AUDIO_ALERT_TYPE_E type);
+
+/***********************************************************
+***********************config struct************************
+***********************************************************/
+
+/**
+ * @brief AI Configuration Structure
+ */
+typedef struct {
+    AI_CHAT_MODE_E      chatMode;       /**< Chat mode selection (from ai_manage_mode.h) */
+    int                 volume;         /**< Default volume (0-100) */
+    AIEventCallback_t   eventCb;        /**< Event callback function */
+    AIStateCallback_t   stateCb;        /**< State change callback */
+    void               *userArg;        /**< User argument for callbacks */
+} AIConfig_t;
 
 /***********************************************************
 ***********************class definition*********************
@@ -152,28 +202,28 @@ public:
     
     /**
      * @brief Set chat mode
-     * @param mode Chat mode to set
+     * @param mode Chat mode to set (AI_CHAT_MODE_E from ai_manage_mode.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET setChatMode(AIChatMode_t mode);
+    OPERATE_RET setChatMode(AI_CHAT_MODE_E mode);
     
     /**
      * @brief Get current chat mode
-     * @return Current chat mode
+     * @return Current chat mode (AI_CHAT_MODE_E)
      */
-    AIChatMode_t getChatMode();
+    AI_CHAT_MODE_E getChatMode();
     
     /**
      * @brief Switch to next chat mode
-     * @return New chat mode
+     * @return New chat mode (AI_CHAT_MODE_E)
      */
-    AIChatMode_t nextChatMode();
+    AI_CHAT_MODE_E nextChatMode();
     
     /**
      * @brief Get current AI state
-     * @return Current AI state
+     * @return Current AI state (AI_MODE_STATE_E from ai_manage_mode.h)
      */
-    AIState_t getState();
+    AI_MODE_STATE_E getState();
     
     /**
      * @brief Get state as string
@@ -191,13 +241,13 @@ public:
      * @brief Save current mode configuration
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET loadModeConfig(AIChatMode_t *mode, int *volume);
+    OPERATE_RET loadModeConfig(AI_CHAT_MODE_E *mode, int *volume);
 
     /**
      * @brief Load mode configuration
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET saveModeConfig(AIChatMode_t mode, int volume);
+    OPERATE_RET saveModeConfig(AI_CHAT_MODE_E mode, int volume);
 
     /**
      * @brief Handle mode key event
@@ -224,10 +274,10 @@ public:
     
     /**
      * @brief Request cloud alert from AI
-     * @param type Alert type
+     * @param type Alert type (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET requestCloudAlert(AIAlertType_t type);
+    OPERATE_RET requestCloudAlert(AI_AUDIO_ALERT_TYPE_E type);
 
     //==========================================================================
     // Callback Registration
@@ -282,10 +332,10 @@ public:
     
     /**
      * @brief Play alert (convenience, delegates to Audio.playAlert)
-     * @param type Alert type
+     * @param type Alert type (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET playAlert(AIAlertType_t type) { return Audio.playAlert(type); }
+    OPERATE_RET playAlert(AI_AUDIO_ALERT_TYPE_E type) { return Audio.playAlert(type); }
 
 public:
     // Public accessor methods for nested classes
@@ -296,7 +346,7 @@ public:
 
 private:
     bool _initialized;
-    AIChatMode_t _chatMode;
+    AI_CHAT_MODE_E _chatMode;
     
     AIEventCallback_t   _eventCallback;
     AIStateCallback_t   _stateCallback;

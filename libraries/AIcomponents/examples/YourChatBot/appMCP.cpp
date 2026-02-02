@@ -184,7 +184,7 @@ static OPERATE_RET onSetMode(MCPPropertyList_t properties,
     int mode = TuyaAI.MCP.getPropertyInt(properties, "mode", 0);
     PR_NOTICE("Setting chat mode to %d", mode);
     
-    TuyaAI.setChatMode((AIChatMode_t)mode);
+    TuyaAI.setChatMode((AI_CHAT_MODE_E)mode);
     
     TuyaAI.MCP.setReturnBool(retVal, true);
     return OPRT_OK;

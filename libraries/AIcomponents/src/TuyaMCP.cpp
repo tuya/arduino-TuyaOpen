@@ -10,8 +10,8 @@
 #include "tuya_error_code.h"
 
 #if defined(ENABLE_COMP_AI_MCP) && (ENABLE_COMP_AI_MCP == 1)
-#include "ai_mcp/include/ai_mcp.h"
-#include "ai_mcp/include/ai_mcp_server.h"
+#include "ai_mcp.h"
+#include "ai_mcp_server.h"
 #endif
 
 /***********************************************************

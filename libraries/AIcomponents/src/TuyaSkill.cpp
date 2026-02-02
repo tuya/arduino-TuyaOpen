@@ -8,10 +8,8 @@
 #include "cJSON.h"
 #include "tal_api.h"
 
-extern "C" {
-#include "ai_skills/include/skill_emotion.h"
-#include "ai_skills/include/skill_music_story.h"
-}
+#include "skill_emotion.h"
+#include "skill_music_story.h"
 
 /***********************************************************
 ***********************class implementation*****************

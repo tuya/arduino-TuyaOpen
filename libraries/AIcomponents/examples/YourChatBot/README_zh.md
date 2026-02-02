@@ -60,6 +60,7 @@ YourChatBot/
 #define ENABLE_AUDIO_RECORDING  0   // 设为 1 启用音频录制
 ```
 
+
 ### 获取授权信息
 
 - **PID（产品 ID）**：在 [涂鸦开发者平台](https://tuyaopen.ai/zh/docs/cloud/tuya-cloud/creating-new-product) 创建产品获取
@@ -69,7 +70,7 @@ YourChatBot/
 
 ```cpp
 AIConfig_t aiConfig = {
-    .chatMode = AI_MODE_WAKEUP,  // 默认唤醒词模式
+    .chatMode = AI_CHAT_MODE_WAKEUP,  // 默认唤醒词模式
     .volume = 70,
     .eventCb = aiEventCallback,
     .stateCb = aiStateCallback,
@@ -80,10 +81,10 @@ AIConfig_t aiConfig = {
 可选模式：
 | 模式 | 说明 |
 |------|------|
-| `AI_MODE_HOLD` | 按住按钮说话 |
-| `AI_MODE_ONESHOT` | 按一下触发单次对话 |
-| `AI_MODE_WAKEUP` | 唤醒词 + 单次对话 |
-| `AI_MODE_FREE` | 自由对话模式 |
+| `AI_CHAT_MODE_HOLD` | 按住按钮说话 |
+| `AI_CHAT_MODE_ONESHOT` | 按一下触发单次对话 |
+| `AI_CHAT_MODE_WAKEUP` | 唤醒词 + 单次对话 |
+| `AI_CHAT_MODE_FREE` | 自由对话模式 |
 
 ### UI 类型
 
@@ -126,7 +127,7 @@ TuyaAI              // 主控制器
 ### 事件回调
 
 ```cpp
-void aiEventCallback(AIEvent_t event, uint8_t *data, uint32_t len, void *arg) {
+void aiEventCallback(AI_USER_EVT_TYPE_E event, uint8_t *data, uint32_t len, void *arg) {
     switch (event) {
         case AI_USER_EVT_ASR_OK:      // 语音识别成功
         case AI_USER_EVT_TTS_START:   // TTS 开始播放

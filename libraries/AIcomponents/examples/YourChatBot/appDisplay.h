@@ -77,9 +77,9 @@ void appDisplaySetMode(int mode);
 
 /**
  * @brief Set WiFi status display
- * @param status WiFi status (UI_WIFI_GOOD, UI_WIFI_FAIR, etc.)
+ * @param status WiFi status (AI_UI_WIFI_STATUS_GOOD, AI_UI_WIFI_STATUS_FAIR, etc.)
  */
-void appDisplaySetWifi(UIWifiStatus_t status);
+void appDisplaySetWifi(AI_UI_WIFI_STATUS_E status);
 
 #ifdef __cplusplus
 }
