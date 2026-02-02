@@ -23,8 +23,8 @@
 ************************macro define************************
 ***********************************************************/
 // Device credentials (replace with your own)
-#define TUYA_DEVICE_UUID    "uuid5ff159bdb94f3b8c"
-#define TUYA_DEVICE_AUTHKEY "2MFUOajvyI8hPuGBgyTwCpIC7b4Du5f8"
+#define TUYA_DEVICE_UUID    "uuidxxxxxxxxxxxxxxxx"
+#define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #define TUYA_PRODUCT_ID     "9inb01mvjqh5zhhr"
 
 // Audio recording configuration
