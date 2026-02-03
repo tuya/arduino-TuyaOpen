@@ -60,6 +60,7 @@ OPERATE_RET appStatusInit()
     // Display initial status
     updateWifiDisplay(gLastWifiStatus);
     updateStatusDisplay(INITIALIZING);
+    appStatusUpdateMode(TuyaAI.getChatMode());
     
     // Create and start display status update timer
     rt = tal_sw_timer_create(dispStatusTimerCallback, NULL, &gDispStatusTimer);

@@ -207,7 +207,7 @@ void appDisplaySetStatus(const char *status)
 #if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     lv_label_set_text(sg_lblStatus, status);
 #else
-    TuyaAI.UI.displayMessage(AI_UI_DISP_STATUS, (uint8_t *)status, strlen(status));
+    // TuyaAI.UI.displayMessage(AI_UI_DISP_STATUS, (uint8_t *)status, strlen(status));
     PR_NOTICE("Status: [%s]", status);
 #endif
 }
@@ -219,7 +219,6 @@ void appDisplaySetStatus(const char *status)
 void appDisplaySetMode(int mode)
 {   
     if (!gReady) return;
-#if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     const char *modeStr;
     switch (mode) {
         case AI_CHAT_MODE_HOLD:     modeStr = HOLD_TALK; break;
@@ -228,10 +227,11 @@ void appDisplaySetMode(int mode)
         case AI_CHAT_MODE_FREE:     modeStr = FREE_TALK; break;
         default:                    modeStr = "---"; break;
     }
+#if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     lv_label_set_text(sg_lblMode, modeStr);
 #else
-    TuyaAI.UI.displayMessage(AI_UI_DISP_CHAT_MODE, (uint8_t *)&mode, sizeof(AI_CHAT_MODE_E));
-    PR_NOTICE("Mode: [%d]", mode);
+    // TuyaAI.UI.displayMessage(AI_UI_DISP_CHAT_MODE, (uint8_t *)modeStr, strlen(modeStr));
+    PR_NOTICE("Mode: [%s]", modeStr);
 #endif
 }
 
