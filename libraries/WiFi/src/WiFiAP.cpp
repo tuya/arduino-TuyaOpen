@@ -80,12 +80,23 @@ bool WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress 
         // enable AP failed
         return false;
     }
-    strcpy((char *)ap_cfg_info.ip.ip, local_ip.toString().c_str());
-    strcpy((char *)ap_cfg_info.ip.gw, gateway.toString().c_str());
-    strcpy((char *)ap_cfg_info.ip.mask, subnet.toString().c_str());
 
-    PR_INFO("ip:%s,Gateway: %s,Netmask: %s,dns:%s\r\n", local_ip.toString().c_str(), gateway.toString().c_str(), subnet.toString().c_str());
-    return  err == OPRT_OK; 
+    String ip_str = local_ip.toString();
+    String gw_str = gateway.toString();
+    String mask_str = subnet.toString();
+
+    strncpy((char *)ap_cfg_info.ip.ip, ip_str.c_str(), sizeof(ap_cfg_info.ip.ip) - 1);
+    ap_cfg_info.ip.ip[sizeof(ap_cfg_info.ip.ip) - 1] = '\0';
+    
+    strncpy((char *)ap_cfg_info.ip.gw, gw_str.c_str(), sizeof(ap_cfg_info.ip.gw) - 1);
+    ap_cfg_info.ip.gw[sizeof(ap_cfg_info.ip.gw) - 1] = '\0';
+    
+    strncpy((char *)ap_cfg_info.ip.mask, mask_str.c_str(), sizeof(ap_cfg_info.ip.mask) - 1);
+    ap_cfg_info.ip.mask[sizeof(ap_cfg_info.ip.mask) - 1] = '\0';
+
+    PR_INFO("ip:%s, Gateway:%s, Netmask:%s\r\n", ip_str.c_str(), gw_str.c_str(), mask_str.c_str());
+    
+    return err == OPRT_OK; 
 }
 
 bool WiFiAPClass::softAPdisconnect(bool wifioff)
@@ -215,9 +226,10 @@ bool WiFiAPClass::softAPsetHostname(const char * hostname)
         return false;
     }
     static char net_hostname[32] = {0};
-    memset(net_hostname,0,sizeof(net_hostname));
-    strcpy(net_hostname,hostname);
-    netif_set_hostname((struct netif *)net_get_uap_handle(),net_hostname);
+    memset(net_hostname, 0, sizeof(net_hostname));
+    strncpy(net_hostname, hostname, sizeof(net_hostname) - 1);
+    net_hostname[sizeof(net_hostname) - 1] = '\0';
+    netif_set_hostname((struct netif *)net_get_uap_handle(), net_hostname);
     return true;
 }
 
