@@ -404,8 +404,7 @@ static void _internalEventHandler(AI_NOTIFY_EVENT_T *event) {
 
             case AI_USER_EVT_MODE_SWITCH:
                 // Mode switch event - pass new mode as uint32_t
-                if (event->data) {
-                    
+                if (event->data != nullptr) {
                     uint32_t *modePtr = (uint32_t *)event->data;
                     data = (uint8_t *)modePtr;
                     len = sizeof(uint32_t);
