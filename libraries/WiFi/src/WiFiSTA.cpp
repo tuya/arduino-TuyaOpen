@@ -127,12 +127,23 @@ bool WiFiSTAClass::config(IPAddress local_ip, IPAddress gateway, IPAddress subne
     }
 
     memset(&sta_ip, 0, sizeof(NW_IP_S));
-    strcpy(sta_ip.ip, local_ip.toString().c_str());
-    strcpy(sta_ip.gw, gateway.toString().c_str());
-    strcpy(sta_ip.mask, subnet.toString().c_str());
+    
+    String ip_str = local_ip.toString();
+    String gw_str = gateway.toString();
+    String mask_str = subnet.toString();
+    
+    strncpy(sta_ip.ip, ip_str.c_str(), sizeof(sta_ip.ip) - 1);
+    sta_ip.ip[sizeof(sta_ip.ip) - 1] = '\0';
+    
+    strncpy(sta_ip.gw, gw_str.c_str(), sizeof(sta_ip.gw) - 1);
+    sta_ip.gw[sizeof(sta_ip.gw) - 1] = '\0';
+    
+    strncpy(sta_ip.mask, mask_str.c_str(), sizeof(sta_ip.mask) - 1);
+    sta_ip.mask[sizeof(sta_ip.mask) - 1] = '\0';
+    
     int res = tkl_wifi_set_ip(WF_STATION, &sta_ip);
-
-    return res;
+    
+    return (res == OPRT_OK);
 }
 
 bool WiFiSTAClass::isConnected()
