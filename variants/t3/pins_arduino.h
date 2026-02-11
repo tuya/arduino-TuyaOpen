@@ -58,8 +58,8 @@ uint8_t adcPinToChannel(uint8_t pin);
 TUYA_ADC_BASE_CFG_T adcCfgGet(uint8_t pin);
 
 // i2c
-#define PIN_I2C0_SCL        (40)
-#define PIN_I2C0_SDA        (41)
+#define SCL        (40)
+#define SDA        (41)
 
 // pwm
 TUYA_PWM_NUM_E pwmPinToNum(uint8_t pin);

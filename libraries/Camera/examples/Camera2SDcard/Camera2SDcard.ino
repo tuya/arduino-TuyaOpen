@@ -64,10 +64,6 @@ void setup()
     
     PR_NOTICE("=======Camera to SD card example========");
     PR_NOTICE("Compile time:        %s", __DATE__);
-    PR_NOTICE("TuyaOpen version:    %s", OPEN_VERSION);
-    PR_NOTICE("Platform chip:       %s", PLATFORM_CHIP);
-    PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
-    PR_NOTICE("========================================");
     
     // Initialize display
     if (OPRT_OK != display.begin()) {

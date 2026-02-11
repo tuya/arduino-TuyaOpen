@@ -29,10 +29,6 @@ void setup()
     PR_NOTICE("========================================");
     PR_NOTICE("Display Picture Example");
     PR_NOTICE("Compile time:        %s %s", __DATE__, __TIME__);
-    PR_NOTICE("TuyaOpen version:    %s", OPEN_VERSION);
-    PR_NOTICE("Platform chip:       %s", PLATFORM_CHIP);
-    PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
-    PR_NOTICE("========================================");
 
     /*hardware register*/
     if (OPRT_OK != board_register_hardware()) {

@@ -8,7 +8,7 @@
 #include "TuyaAI.h"
 #include <string.h>
 
-#include "tkl_asr.h"
+#include "tkl_kws.h"
 #include "tdd_audio.h"
 #include "tdl_audio_manage.h"
 
@@ -98,37 +98,11 @@ TuyaAudioClass::~TuyaAudioClass() {
     }
 }
 
-OPERATE_RET TuyaAudioClass::begin(uint8_t spkPin) {
+OPERATE_RET TuyaAudioClass::begin() {
     if (_initialized) {
         return OPRT_OK;
     }
     OPERATE_RET rt = OPRT_OK;
-
-#if defined(AUDIO_CODEC_NAME) && defined(PLATFORM_T5) && defined(ARDUINO_AUDIO_CODEC_NAME)
-    // Register audio hardware
-    TDD_AUDIO_T5AI_T cfg;
-    memset(&cfg, 0, sizeof(TDD_AUDIO_T5AI_T));
-#if defined(ENABLE_AUDIO_AEC) && (ENABLE_AUDIO_AEC == 1)
-    cfg.aec_enable = 1;
-#else
-    cfg.aec_enable = 0;
-#endif
-    cfg.ai_chn = TKL_AI_0;
-    cfg.sample_rate = TKL_AUDIO_SAMPLE_16K;
-    cfg.data_bits = TKL_AUDIO_DATABITS_16;
-    cfg.channel = TKL_AUDIO_CHANNEL_MONO;
-    cfg.spk_sample_rate = TKL_AUDIO_SAMPLE_16K;
-    cfg.spk_pin = spkPin;
-    cfg.spk_pin_polarity = TUYA_GPIO_LEVEL_LOW;
-    
-    static char codec_name[] = ARDUINO_AUDIO_CODEC_NAME;
-    rt = tdd_audio_register(codec_name, cfg);
-    if (rt != OPRT_OK) {
-        PR_ERR("Failed to register audio codec: %d", rt);
-        return rt;
-    }
-    PR_DEBUG("Audio codec registered");
-#endif
     
     // Audio is typically initialized as part of ai_chat_init
     AI_AUDIO_INPUT_CFG_T input_cfg= {
@@ -142,7 +116,7 @@ OPERATE_RET TuyaAudioClass::begin(uint8_t spkPin) {
 
     TUYA_CALL_ERR_RETURN(ai_audio_player_init());
 
-    TUYA_CALL_ERR_RETURN(tkl_asr_init());
+    TUYA_CALL_ERR_RETURN(tkl_kws_init());
 
     int vol = ai_chat_get_volume();
     TUYA_CALL_ERR_LOG(ai_audio_player_set_vol(vol));

@@ -103,56 +103,106 @@ t3.upload.tool.default=tyutool
 t3.monitor_port.serial.baudrate=115200
 
 # --------------------------------------------------
-#                    TUYA_T5AI                        
+#                  TUYA_T5AI_BOARD                  
 # --------------------------------------------------
-t5.name=TUYA_T5AI
-t5.build.chip=t5
-t5.build.board=TUYA_T5AI
-t5.build.core=tuya_open
-t5.build.variant=t5
+TUYA_T5AI_BOARD.name=TUYA_T5AI_BOARD
+TUYA_T5AI_BOARD.build.chip=t5
+TUYA_T5AI_BOARD.build.board=TUYA_T5AI_BOARD
+TUYA_T5AI_BOARD.build.core=tuya_open
+TUYA_T5AI_BOARD.build.variant=TUYA_T5AI_BOARD
 
-t5.menu.UploadSpeed.921600=921600
-t5.menu.UploadSpeed.921600.upload.speed=921600
-t5.menu.UploadSpeed.115200=115200
-t5.menu.UploadSpeed.115200.upload.speed=115200
-t5.menu.UploadSpeed.230400=230400
-t5.menu.UploadSpeed.230400.upload.speed=230400
-t5.menu.UploadSpeed.460800=460800
-t5.menu.UploadSpeed.460800.upload.speed=460800
-t5.menu.UploadSpeed.1500000=1500000
-t5.menu.UploadSpeed.1500000.upload.speed=1500000
-t5.menu.UploadSpeed.2000000=2000000
-t5.menu.UploadSpeed.2000000.upload.speed=2000000
+TUYA_T5AI_BOARD.menu.UploadSpeed.921600=921600
+TUYA_T5AI_BOARD.menu.UploadSpeed.921600.upload.speed=921600
+TUYA_T5AI_BOARD.menu.UploadSpeed.115200=115200
+TUYA_T5AI_BOARD.menu.UploadSpeed.115200.upload.speed=115200
+TUYA_T5AI_BOARD.menu.UploadSpeed.230400=230400
+TUYA_T5AI_BOARD.menu.UploadSpeed.230400.upload.speed=230400
+TUYA_T5AI_BOARD.menu.UploadSpeed.460800=460800
+TUYA_T5AI_BOARD.menu.UploadSpeed.460800.upload.speed=460800
+TUYA_T5AI_BOARD.menu.UploadSpeed.1500000=1500000
+TUYA_T5AI_BOARD.menu.UploadSpeed.1500000.upload.speed=1500000
+TUYA_T5AI_BOARD.menu.UploadSpeed.2000000=2000000
+TUYA_T5AI_BOARD.menu.UploadSpeed.2000000.upload.speed=2000000
 
-t5.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
-t5.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
-t5.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
-t5.compiler.cmd.cpp={compiler.path}/bin/arm-none-eabi-g++
-t5.compiler.cmd.ar={compiler.path}/bin/arm-none-eabi-ar
-t5.compiler.cmd.ld={compiler.path}/bin/arm-none-eabi-g++
+TUYA_T5AI_BOARD.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
+TUYA_T5AI_BOARD.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
+TUYA_T5AI_BOARD.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
+TUYA_T5AI_BOARD.compiler.cmd.cpp={compiler.path}/bin/arm-none-eabi-g++
+TUYA_T5AI_BOARD.compiler.cmd.ar={compiler.path}/bin/arm-none-eabi-ar
+TUYA_T5AI_BOARD.compiler.cmd.ld={compiler.path}/bin/arm-none-eabi-g++
 
-t5.vendor.path={runtime.tools.vendor-t5.path}
-t5.compiler.flags.S=@{runtime.tools.vendor-t5.path}/flags/S_flags.txt
-t5.compiler.flags.c=@{runtime.tools.vendor-t5.path}/flags/c_flags.txt
-t5.compiler.flags.cpp=@{runtime.tools.vendor-t5.path}/flags/cpp_flags.txt
-t5.compiler.flags.ar=@{runtime.tools.vendor-t5.path}/flags/ar_flags.txt
+TUYA_T5AI_BOARD.vendor.path={runtime.tools.vendor-t5.path}
+TUYA_T5AI_BOARD.compiler.flags.S=@{runtime.tools.vendor-t5.path}/flags/S_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.c=@{runtime.tools.vendor-t5.path}/flags/c_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.cpp=@{runtime.tools.vendor-t5.path}/flags/cpp_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.ar=@{runtime.tools.vendor-t5.path}/flags/ar_flags.txt
 
-t5.appBuild.flags=@{build.path}/tuyaTmp/appConfig/appBuildDefine.txt
+TUYA_T5AI_BOARD.appBuild.flags=@{build.path}/tuyaTmp/appConfig/appBuildDefine.txt
 
-t5.compiler.includes.tuya_open=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tuya_open.txt
-t5.compiler.includes.tkl=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tkl.txt
-t5.compiler.includes.vendor=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_vendor.txt
-t5.compiler.includes.boards=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_boards.txt
-t5.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor} {compiler.includes.boards}
+TUYA_T5AI_BOARD.compiler.includes.tuya_open=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tuya_open.txt
+TUYA_T5AI_BOARD.compiler.includes.tkl=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tkl.txt
+TUYA_T5AI_BOARD.compiler.includes.vendor=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_vendor.txt
+TUYA_T5AI_BOARD.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
 
-t5.compiler.flags.ld=@{runtime.tools.vendor-t5.path}/flags/ld_flags.txt
-t5.compiler.flags.libs=-L{runtime.tools.vendor-t5.path}/libs @{runtime.tools.vendor-t5.path}/flags/libs_flags.txt
-t5.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-t5.path}/packager-tools/t5.ld -o {build.path}/{build.project_name}.elf
+TUYA_T5AI_BOARD.compiler.flags.ld=@{runtime.tools.vendor-t5.path}/flags/ld_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.libs=-L{runtime.tools.vendor-t5.path}/libs @{runtime.tools.vendor-t5.path}/flags/libs_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-t5.path}/packager-tools/t5.ld -o {build.path}/{build.project_name}.elf
 
-t5.upload.tool=tyutool
-t5.upload.tool.default=tyutool
+TUYA_T5AI_BOARD.upload.tool=tyutool
+TUYA_T5AI_BOARD.upload.tool.default=tyutool
 
-t5.monitor_port.serial.baudrate=115200
+TUYA_T5AI_BOARD.monitor_port.serial.baudrate=115200
+
+# --------------------------------------------------
+#                   TUYA_T5AI_CORE                  
+# --------------------------------------------------
+TUYA_T5AI_CORE.name=TUYA_T5AI_CORE
+TUYA_T5AI_CORE.build.chip=t5
+TUYA_T5AI_CORE.build.board=TUYA_T5AI_CORE
+TUYA_T5AI_CORE.build.core=tuya_open
+TUYA_T5AI_CORE.build.variant=TUYA_T5AI_CORE
+
+TUYA_T5AI_CORE.menu.UploadSpeed.921600=921600
+TUYA_T5AI_CORE.menu.UploadSpeed.921600.upload.speed=921600
+TUYA_T5AI_CORE.menu.UploadSpeed.115200=115200
+TUYA_T5AI_CORE.menu.UploadSpeed.115200.upload.speed=115200
+TUYA_T5AI_CORE.menu.UploadSpeed.230400=230400
+TUYA_T5AI_CORE.menu.UploadSpeed.230400.upload.speed=230400
+TUYA_T5AI_CORE.menu.UploadSpeed.460800=460800
+TUYA_T5AI_CORE.menu.UploadSpeed.460800.upload.speed=460800
+TUYA_T5AI_CORE.menu.UploadSpeed.1500000=1500000
+TUYA_T5AI_CORE.menu.UploadSpeed.1500000.upload.speed=1500000
+TUYA_T5AI_CORE.menu.UploadSpeed.2000000=2000000
+TUYA_T5AI_CORE.menu.UploadSpeed.2000000.upload.speed=2000000
+
+TUYA_T5AI_CORE.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
+TUYA_T5AI_CORE.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
+TUYA_T5AI_CORE.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
+TUYA_T5AI_CORE.compiler.cmd.cpp={compiler.path}/bin/arm-none-eabi-g++
+TUYA_T5AI_CORE.compiler.cmd.ar={compiler.path}/bin/arm-none-eabi-ar
+TUYA_T5AI_CORE.compiler.cmd.ld={compiler.path}/bin/arm-none-eabi-g++
+
+TUYA_T5AI_CORE.vendor.path={runtime.tools.vendor-t5.path}
+TUYA_T5AI_CORE.compiler.flags.S=@{runtime.tools.vendor-t5.path}/flags/S_flags.txt
+TUYA_T5AI_CORE.compiler.flags.c=@{runtime.tools.vendor-t5.path}/flags/c_flags.txt
+TUYA_T5AI_CORE.compiler.flags.cpp=@{runtime.tools.vendor-t5.path}/flags/cpp_flags.txt
+TUYA_T5AI_CORE.compiler.flags.ar=@{runtime.tools.vendor-t5.path}/flags/ar_flags.txt
+
+TUYA_T5AI_CORE.appBuild.flags=@{build.path}/tuyaTmp/appConfig/appBuildDefine.txt
+
+TUYA_T5AI_CORE.compiler.includes.tuya_open=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tuya_open.txt
+TUYA_T5AI_CORE.compiler.includes.tkl=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_tkl.txt
+TUYA_T5AI_CORE.compiler.includes.vendor=-iprefix {runtime.tools.vendor-t5.path}/ @{runtime.tools.vendor-t5.path}/flags/include_vendor.txt
+TUYA_T5AI_CORE.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
+
+TUYA_T5AI_CORE.compiler.flags.ld=@{runtime.tools.vendor-t5.path}/flags/ld_flags.txt
+TUYA_T5AI_CORE.compiler.flags.libs=-L{runtime.tools.vendor-t5.path}/libs @{runtime.tools.vendor-t5.path}/flags/libs_flags.txt
+TUYA_T5AI_CORE.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-t5.path}/packager-tools/t5.ld -o {build.path}/{build.project_name}.elf
+
+TUYA_T5AI_CORE.upload.tool=tyutool
+TUYA_T5AI_CORE.upload.tool.default=tyutool
+
+TUYA_T5AI_CORE.monitor_port.serial.baudrate=115200
 
 # --------------------------------------------------
 #                      XH WB5E                      

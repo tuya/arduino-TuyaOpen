@@ -32,7 +32,6 @@ struct AudioImpl {
     
     // Configuration
     uint8_t volume;
-    uint8_t spkPin;
     bool enableAEC;
     
     // Callback
@@ -103,7 +102,6 @@ OPERATE_RET Audio::begin(const AudioConfig* config)
     // Apply configuration
     impl->micBufferSize = (config && config->micBufferSize > 0) ? config->micBufferSize : 16000;
     impl->volume = (config && config->volume <= 100) ? config->volume : 60;
-    impl->spkPin = (config) ? config->spkPin : 0;
     impl->enableAEC = (config) ? config->enableAEC : false;
     impl->micStatus = AudioStatus::IDLE;
     impl->spkStatus = AudioStatus::IDLE;
@@ -125,7 +123,6 @@ OPERATE_RET Audio::begin(const AudioConfig* config)
     cfg.data_bits = TKL_AUDIO_DATABITS_16;
     cfg.channel = TKL_AUDIO_CHANNEL_MONO;
     cfg.spk_sample_rate = TKL_AUDIO_SAMPLE_16K;
-    cfg.spk_pin = impl->spkPin;
     cfg.spk_pin_polarity = TUYA_GPIO_LEVEL_LOW;
     
     static char codec_name[] = ARDUINO_AUDIO_CODEC_NAME;

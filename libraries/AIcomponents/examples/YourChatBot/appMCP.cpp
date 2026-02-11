@@ -69,7 +69,6 @@ OPERATE_RET appMCPInit(void) {
     PR_DEBUG("appMCPInit called");
     OPERATE_RET rt = OPRT_OK;
     rt = tal_event_subscribe(EVENT_MQTT_CONNECTED, "mcpRegisterTool", mcpRegisterTool, SUBSCRIBE_TYPE_ONETIME);
-    // rt = TuyaAI.MCP.begin();
     if (rt != OPRT_OK) {
         PR_ERR("Failed to subscribe to MQTT event: %d", rt);
         return rt;
