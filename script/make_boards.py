@@ -141,9 +141,13 @@ if __name__ == "__main__":
     t3_bi = board_info_class("t3", "t3", "", "T3", "t3", t3_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
     make_board(t3_bi)
 
-    t5_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
-    t5_bi = board_info_class("t5", "t5", "", "T5", "t5", t5_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
-    make_board(t5_bi)
+    t5ai_board_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
+    t5ai_board_bi = board_info_class("TUYA_T5AI_BOARD", "t5", "", "TUYA_T5AI_BOARD", "TUYA_T5AI_BOARD", t5ai_board_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
+    make_board(t5ai_board_bi)
+
+    t5ai_core_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
+    t5ai_core_bi = board_info_class("TUYA_T5AI_CORE", "t5", "", "TUYA_T5AI_CORE", "TUYA_T5AI_CORE", t5ai_core_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")
+    make_board(t5ai_core_bi)
 
     wb5e_upload_speed_list = [921600, 115200, 230400, 460800, 1500000, 2000000]
     wb5e_bi = board_info_class("XH_WB5E", "t5", "XH", "WB5E", "XH_WB5E", wb5e_upload_speed_list, compiler_path, "arm-none-eabi-", "tuya_open")

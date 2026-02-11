@@ -25,8 +25,6 @@
 /***********************************************************
 ************************macro define************************
 ***********************************************************/
-#define BOARD_SPEAKER_EN_PIN TUYA_GPIO_NUM_28
-
 // Audio source selection: 0=C array, 1=Flash, 2=SD card
 #define AUDIO_SOURCE 0
 
@@ -56,16 +54,11 @@ void setup() {
     // Print startup banner
     PR_NOTICE("========= Audio Speaker Demo ===========");
     PR_NOTICE("Compile time:        %s", __DATE__);
-    PR_NOTICE("TuyaOpen version:    %s", OPEN_VERSION);
-    PR_NOTICE("Platform chip:       %s", PLATFORM_CHIP);
-    PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
-    PR_NOTICE("========================================");
     
     // Initialize audio
     AudioConfig cfg;
     cfg.micBufferSize = 0;
     cfg.volume = 70;
-    cfg.spkPin = BOARD_SPEAKER_EN_PIN;
 
     // Hardware initialization
     if (OPRT_OK != board_register_hardware()) {

@@ -11,7 +11,6 @@
 #include "tdl_display_driver.h"
 #include "tdl_display_format.h"
 #include "tdl_display_fb_manage.h"
-#include "tuya_t5ai_ex_module.h"
 
 // Internal implementation structure (hidden from users)
 struct DisplayImpl {

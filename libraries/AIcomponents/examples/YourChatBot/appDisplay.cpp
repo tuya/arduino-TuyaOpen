@@ -207,7 +207,7 @@ void appDisplaySetStatus(const char *status)
 #if defined(UI_TYPE) && (UI_TYPE == BOT_UI_USER)
     lv_label_set_text(sg_lblStatus, status);
 #else
-    // TuyaAI.UI.displayMessage(AI_UI_DISP_STATUS, (uint8_t *)status, strlen(status));
+    TuyaAI.UI.displayMessage(AI_UI_DISP_STATUS, (uint8_t *)status, strlen(status));
     PR_NOTICE("Status: [%s]", status);
 #endif
 }

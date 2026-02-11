@@ -58,22 +58,32 @@ extern "C" {
 #define pin47 (47u)
 
 #define LED_BUILTIN     9
-#define BUTTON_BUILTIN  7
+#define BUTTON_BUILTIN  29
 
 static const uint8_t A0 = (25u);
 static const uint8_t A1 = (24u);
-static const uint8_t A2 = (28u);
-static const uint8_t A3 = (13u);
-static const uint8_t A4 = (12u);
+static const uint8_t A2 = (23u);
+static const uint8_t A3 = (28u);
+static const uint8_t A4 = (22u);
+static const uint8_t A5 = (21u);
 
 static const uint8_t D0 = (18u);
 static const uint8_t D1 = (24u);
 static const uint8_t D2 = (32u);
 static const uint8_t D3 = (34u);
 static const uint8_t D4 = (36u);
+static const uint8_t D5 = (19u);
 
 // uart
 static const uint8_t defaultSerial = 0;
+static const uint8_t TX = (11u);
+static const uint8_t RX = (10u);
+static const uint8_t TX1 = (0u);
+static const uint8_t RX1 = (1u);
+static const uint8_t TX2 = (31u);
+static const uint8_t RX2 = (30u);
+// static const uint8_t TX2 = (41u);
+// static const uint8_t RX2 = (40u);
 
 // adc
 #define TUYA_ADC_INVALID_VALUE (0xFFu)
@@ -87,21 +97,16 @@ TUYA_PWM_NUM_E pwmPinToNum(uint8_t pin);
 TUYA_PWM_BASE_CFG_T pwmCfgGet(uint8_t pin);
 
 // i2c
-#define PIN_I2C0_SCL        (20u)
-#define PIN_I2C0_SDA        (22u)
+static const uint8_t SCL = (20u);
+static const uint8_t SDA = (21u);
 
 // SPI
 #define SPI_DEFAULT_CLOCK  (8000000u)
 
-// #define PIN_SPI0_SCK        (34u)
-#define PIN_SPI0_CS         (34u)
-#define PIN_SPI0_MISO       (36u)
-#define PIN_SPI0_MOSI       (35u)
-
-#define PIN_SPI1_SCK        (2u)
-#define PIN_SPI1_CS         (3u)
-#define PIN_SPI1_MISO       (5u)
-#define PIN_SPI1_MOSI       (4u)
+static const uint8_t SS = (15u);
+static const uint8_t SCK = (14u);
+static const uint8_t MOSI = (16u);
+static const uint8_t MISO = (17u);
 
 #if defined(__cplusplus) && !defined(c_plusplus)
 }

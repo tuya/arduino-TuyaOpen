@@ -158,7 +158,7 @@ public:
      * @param text Text content to send
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET snedText(const char *text);
+    OPERATE_RET sendText(const char *text);
     
     /**
      * @brief Send text input from buffer
@@ -166,7 +166,7 @@ public:
      * @param len    Buffer length
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET snedText(uint8_t *buffer, int len);
+    OPERATE_RET sendText(uint8_t *buffer, int len);
     
     /**
      * @brief Start voice input recording

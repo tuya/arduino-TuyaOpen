@@ -91,11 +91,7 @@ void app_open_sdk_init(void)
 #endif
 
   // wifi init
-  // TODO: set country code
-  // TODO: use netconn_wifi functions
-#if (!defined(ARDUINO_TUYA_T5AI) && !defined(ARDUINO_ESP32))
-  // tal_wifi_init(__wifi_callback_event);
-  // network init
+#if defined(ARDUINO_TUYA_T5AI_BOARD) || defined(ARDUINO_TUYA_T5AI_CORE) || defined(ARDUINO_ESP32)
   netmgr_type_e type = 0;
 #if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
   type |= NETCONN_WIFI;
@@ -109,8 +105,13 @@ void app_open_sdk_init(void)
 #endif
   tal_wifi_set_country_code("CN");
   tkl_wifi_set_lp_mode(0, 0);
+
+#else
+  tal_wifi_init(__wifi_callback_event);
+  tal_wifi_set_country_code("CN");
 #endif
 }
+
 
 static void ArduinoThread(void *arg)
 {
@@ -122,12 +123,12 @@ static void ArduinoThread(void *arg)
   }
 #endif // defined(ARDUINO_T2)
 
-#if (!defined(ARDUINO_LN882H)&& !defined(ARDUINO_ESP32))
+#if defined(ARDUINO_LN882H) && defined(ARDUINO_ESP32)
   tkl_uart_deinit(TUYA_UART_NUM_0);
-#if (!defined(ARDUINO_T3) && !defined(ARDUINO_TUYA_T5AI) && !defined(ARDUINO_ESP32))
+
+#elif defined(ARDUINO_T3) && defined(ARDUINO_TUYA_T5AI_BOARD) && defined(ARDUINO_TUYA_T5AI_CORE)
   tkl_uart_deinit(TUYA_UART_NUM_1); // TODO: close vendor log
 #endif
-#endif // (!defined(ARDUINO_LN882H))
 
   app_open_sdk_init();
 

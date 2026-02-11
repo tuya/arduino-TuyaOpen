@@ -45,42 +45,42 @@
 ### 1. 基本文件操作
 ```cpp
 // 创建目录
-fs.mkdir("/test_dir");
+SD.mkdir("/test_dir");
 
 // 创建并写入文件
-TUYA_FILE file = fs.open("/test_dir/test.txt", "w");
-fs.write("Hello, SD Card!", 15, file);
-fs.close(file);
+TUYA_FILE file = SD.open("/test_dir/test.txt", "w");
+SD.write("Hello, SD Card!", 15, file);
+SD.close(file);
 ```
 
 ### 2. 文件读取
 ```cpp
 // 读取整个文件
-TUYA_FILE file = fs.open("/test_dir/test.txt", "r");
+TUYA_FILE file = SD.open("/test_dir/test.txt", "r");
 char buffer[100];
-int bytes_read = fs.read(buffer, sizeof(buffer), file);
+int bytes_read = SD.read(buffer, sizeof(buffer), file);
 ```
 
 ### 3. 目录操作
 ```cpp
 // 列出目录内容
-TUYA_DIR dir = fs.openDir("/test_dir");
+TUYA_DIR dir = SD.openDir("/test_dir");
 TUYA_FILEINFO info;
-while ((info = fs.readDir(dir)) != NULL) {
+while ((info = SD.readDir(dir)) != NULL) {
     const char *name;
-    fs.getDirName(info, &name);
+    SD.getDirName(info, &name);
     // 处理文件/目录
 }
-fs.closeDir(dir);
+SD.closeDir(dir);
 ```
 
 ### 4. 文件信息
 ```cpp
 // 检查文件存在性
-bool exists = fs.exist("/test_dir/test.txt");
+bool exists = SD.exist("/test_dir/test.txt");
 
 // 获取文件大小
-int size = fs.filesize("/test_dir/test.txt");
+int size = SD.filesize("/test_dir/test.txt");
 ```
 
 ## 串口监视器输出示例
@@ -181,30 +181,30 @@ Checking file: /test_dir/hello.txt
 ```cpp
 uint8_t data[1024];
 // 填充数据数组
-TUYA_FILE file = fs.open("/data.bin", "w");
-fs.write((const char*)data, sizeof(data), file);
-fs.close(file);
+TUYA_FILE file = SD.open("/data.bin", "w");
+SD.write((const char*)data, sizeof(data), file);
+SD.close(file);
 ```
 
 ### 逐行读取
 ```cpp
 char line[256];
-TUYA_FILE file = fs.open("/text.txt", "r");
-while (!fs.feof(file)) {
-    int len = fs.readtillN(line, sizeof(line)-1, file);
+TUYA_FILE file = SD.open("/text.txt", "r");
+while (!SD.feof(file)) {
+    int len = SD.readtillN(line, sizeof(line)-1, file);
     if (len > 0) {
         line[len] = '\0';
         // 处理行
     }
 }
-fs.close(file);
+SD.close(file);
 ```
 
 ### 文件位置控制
 ```cpp
-TUYA_FILE file = fs.open("/data.bin", "r");
-fs.lseek(file, 100, SEEK_SET);  // 定位到位置100
-int pos = fs.position(file);     // 获取当前位置
+TUYA_FILE file = SD.open("/data.bin", "r");
+SD.lseek(file, 100, SEEK_SET);  // 定位到位置100
+int pos = SD.position(file);     // 获取当前位置
 ```
 
 ## 代码结构

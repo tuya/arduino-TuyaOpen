@@ -35,7 +35,6 @@ Audio init parameters:
 ```cpp
 cfg.micBufferSize = 60000;
 cfg.volume = 70;
-cfg.spkPin = BOARD_SPEAKER_EN_PIN;
 ```
 
 ## How to Use
