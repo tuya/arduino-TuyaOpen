@@ -45,42 +45,42 @@ The demo automatically executes the following tests:
 ### 1. Basic File Operations
 ```cpp
 // Create directory
-fs.mkdir("/test_dir");
+SD.mkdir("/test_dir");
 
 // Create and write file
-TUYA_FILE file = fs.open("/test_dir/test.txt", "w");
-fs.write("Hello, SD Card!", 15, file);
-fs.close(file);
+TUYA_FILE file = SD.open("/test_dir/test.txt", "w");
+SD.write("Hello, SD Card!", 15, file);
+SD.close(file);
 ```
 
 ### 2. File Reading
 ```cpp
 // Read entire file
-TUYA_FILE file = fs.open("/test_dir/test.txt", "r");
+TUYA_FILE file = SD.open("/test_dir/test.txt", "r");
 char buffer[100];
-int bytes_read = fs.read(buffer, sizeof(buffer), file);
+int bytes_read = SD.read(buffer, sizeof(buffer), file);
 ```
 
 ### 3. Directory Operations
 ```cpp
 // List directory contents
-TUYA_DIR dir = fs.openDir("/test_dir");
+TUYA_DIR dir = SD.openDir("/test_dir");
 TUYA_FILEINFO info;
-while ((info = fs.readDir(dir)) != NULL) {
+while ((info = SD.readDir(dir)) != NULL) {
     const char *name;
-    fs.getDirName(info, &name);
+    SD.getDirName(info, &name);
     // Process file/directory
 }
-fs.closeDir(dir);
+SD.closeDir(dir);
 ```
 
 ### 4. File Information
 ```cpp
 // Check file existence
-bool exists = fs.exist("/test_dir/test.txt");
+bool exists = SD.exist("/test_dir/test.txt");
 
 // Get file size
-int size = fs.filesize("/test_dir/test.txt");
+int size = SD.filesize("/test_dir/test.txt");
 ```
 
 ## Serial Monitor Output Example
@@ -181,30 +181,30 @@ Checking file: /test_dir/hello.txt
 ```cpp
 uint8_t data[1024];
 // Fill data array
-TUYA_FILE file = fs.open("/data.bin", "w");
-fs.write((const char*)data, sizeof(data), file);
-fs.close(file);
+TUYA_FILE file = SD.open("/data.bin", "w");
+SD.write((const char*)data, sizeof(data), file);
+SD.close(file);
 ```
 
 ### Reading Line by Line
 ```cpp
 char line[256];
-TUYA_FILE file = fs.open("/text.txt", "r");
-while (!fs.feof(file)) {
-    int len = fs.readtillN(line, sizeof(line)-1, file);
+TUYA_FILE file = SD.open("/text.txt", "r");
+while (!SD.feof(file)) {
+    int len = SD.readtillN(line, sizeof(line)-1, file);
     if (len > 0) {
         line[len] = '\0';
         // Process line
     }
 }
-fs.close(file);
+SD.close(file);
 ```
 
 ### File Position Control
 ```cpp
-TUYA_FILE file = fs.open("/data.bin", "r");
-fs.lseek(file, 100, SEEK_SET);  // Seek to position 100
-int pos = fs.position(file);     // Get current position
+TUYA_FILE file = SD.open("/data.bin", "r");
+SD.lseek(file, 100, SEEK_SET);  // Seek to position 100
+int pos = SD.position(file);     // Get current position
 ```
 
 ## Code Structure

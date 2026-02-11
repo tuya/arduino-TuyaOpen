@@ -183,12 +183,12 @@ bool TuyaAIClass::isInitialized() {
     return _initialized;
 }
 
-OPERATE_RET TuyaAIClass::snedText(const char *text) {
+OPERATE_RET TuyaAIClass::sendText(const char *text) {
     if (text == nullptr) return OPRT_INVALID_PARM;
     return ai_agent_send_text((char *)text);
 }
 
-OPERATE_RET TuyaAIClass::snedText(uint8_t *buffer, int len) {
+OPERATE_RET TuyaAIClass::sendText(uint8_t *buffer, int len) {
     if (buffer == nullptr || len <= 0) return OPRT_INVALID_PARM;
     
     char *text = (char *)Malloc(len + 1);
@@ -213,12 +213,25 @@ OPERATE_RET TuyaAIClass::stopVoiceInput() {
 
 OPERATE_RET TuyaAIClass::sendImage(uint8_t *data, uint32_t len) {
     if (data == nullptr || len == 0) return OPRT_INVALID_PARM;
-    return ai_agent_send_image(data, len);
+    // return ai_agent_send_image(data, len);
+    tuya_ai_input_start(true);
+    TIME_T timetep = tal_time_get_posix();
+    tuya_ai_image_input(timetep, (uint8_t *)data, len, len);
+    char content[] = "Describe the image content";
+    tuya_ai_text_input((uint8_t *)content, strlen(content), strlen(content));
+    tuya_ai_input_stop();
+    return OPRT_OK;
 }
 
 OPERATE_RET TuyaAIClass::sendFile(uint8_t *data, uint32_t len) {
     if (data == nullptr || len == 0) return OPRT_INVALID_PARM;
-    return ai_agent_send_file(data, len);
+    // return ai_agent_send_file(data, len);
+    tuya_ai_input_start(true);
+    tuya_ai_file_input((uint8_t *)data, len, len);
+    char content[] = "Describe the file content";
+    tuya_ai_text_input((uint8_t *)content, strlen(content), strlen(content));
+    tuya_ai_input_stop();
+    return OPRT_OK;
 }
 
 OPERATE_RET TuyaAIClass::setChatMode(AI_CHAT_MODE_E mode) {

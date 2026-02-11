@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-// UI type selection: BOT_UI_USER(0) for custom, BOT_UI_WECHAT(1) BOT_UI_CHATBOT(2) for default WeChat style
+// UI type selection: BOT_UI_USER(0) for custom, BOT_UI_WECHAT(1) for default WeChat style
 #define UI_TYPE             BOT_UI_WECHAT
 
 /**

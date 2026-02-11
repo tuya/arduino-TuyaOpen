@@ -13,8 +13,8 @@ protected:
 
   uint8_t _i2cPort = -1;
   int _clkHz;
-  pin_size_t _sda = PIN_I2C0_SDA;
-  pin_size_t _scl = PIN_I2C0_SCL;
+  pin_size_t _sda = SDA;
+  pin_size_t _scl = SCL;
 
   size_t _bufferSize;
   uint8_t *_rxBuffer;

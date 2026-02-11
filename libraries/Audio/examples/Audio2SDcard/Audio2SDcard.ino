@@ -24,7 +24,6 @@
 ***********************************************************/
 #define BUTTON_PIN           12
 #define LED_PIN              1
-#define BOARD_SPEAKER_EN_PIN TUYA_GPIO_NUM_28
 #define RECORDINGS_DIR       "/recordings"
 #define MAX_RECORD_MS        30000
 
@@ -130,10 +129,6 @@ void setup() {
     // Print startup banner
     PR_NOTICE("====== Audio to SD Card Example =======");
     PR_NOTICE("Compile time:        %s", __DATE__);
-    PR_NOTICE("TuyaOpen version:    %s", OPEN_VERSION);
-    PR_NOTICE("Platform chip:       %s", PLATFORM_CHIP);
-    PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
-    PR_NOTICE("========================================");
 
     // Hardware initialization
     if (OPRT_OK != board_register_hardware()) {
@@ -163,7 +158,6 @@ void setup() {
     AudioConfig cfg;
     cfg.micBufferSize = 60000;
     cfg.volume = 70;
-    cfg.spkPin = BOARD_SPEAKER_EN_PIN;
     
     if (audio.begin(&cfg) != 0) {
         PR_ERR("Failed to initialize audio");

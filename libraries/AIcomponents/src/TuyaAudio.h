@@ -32,7 +32,7 @@ public:
      * @brief Initialize audio system
      * @return OPRT_OK on success, error code on failure
      */
-    OPERATE_RET begin(uint8_t spkPin = 28);
+    OPERATE_RET begin();
     
     /**
      * @brief Deinitialize audio system

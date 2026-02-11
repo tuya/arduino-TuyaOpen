@@ -34,7 +34,6 @@
 ```cpp
 cfg.micBufferSize = EXAMPLE_MIC_BUFFER_SIZE;
 cfg.volume = 70;
-cfg.spkPin = BOARD_SPEAKER_EN_PIN;
 ```
 
 ## 使用方法

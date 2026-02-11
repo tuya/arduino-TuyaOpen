@@ -33,7 +33,6 @@
 // Hardware pins
 #define LED_PIN             1
 #define BUTTON_PIN          12
-#define SPK_PIN             28          // T5AI board speaker pin
 
 #define DPID_VOLUME         3
 /***********************************************************
@@ -56,14 +55,11 @@ void setup()
     // Initialize Serial and logging
     Serial.begin(115200);
     Log.begin();
+    Log.setLevel(LogClass::WARN);
     
     // Print startup banner
     PR_NOTICE("============Your Chat Bot==============");
     PR_NOTICE("Compile time:        %s", __DATE__);
-    PR_NOTICE("TuyaOpen version:    %s", OPEN_VERSION);
-    PR_NOTICE("Platform chip:       %s", PLATFORM_CHIP);
-    PR_NOTICE("Platform board:      %s", PLATFORM_BOARD);
-    PR_NOTICE("========================================");
 
     // Hardware initialization
     if (OPRT_OK != board_register_hardware()) {
@@ -87,7 +83,7 @@ void setup()
     }
 
     // Initialize Audio
-    if (OPRT_OK != TuyaAI.Audio.begin(SPK_PIN)) {
+    if (OPRT_OK != TuyaAI.Audio.begin()) {
         PR_ERR("TuyaAI Audio initialization failed");
     }
     
@@ -123,7 +119,6 @@ void setup()
 
 void loop()
 {
-    // Main loop - most work is done in callbacks
     handleUserInput();
     
 #if ENABLE_AUDIO_RECORDING
@@ -611,7 +606,7 @@ static void handleUserInput() {
         char c = Serial.read();
         _recv_buf[i++] = c;
         if (c == '\n' || c == '\r') {
-            TuyaAI.snedText(_recv_buf, i);
+            TuyaAI.sendText(_recv_buf, i);
             Serial.print("\n[User]: ");
             Serial.write(_recv_buf, i);
             TuyaAI.UI.displayText((const char *)_recv_buf, true);

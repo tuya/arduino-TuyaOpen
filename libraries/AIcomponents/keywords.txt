@@ -43,7 +43,7 @@ MCPToolCallback_t	KEYWORD1
 begin	KEYWORD2
 end	KEYWORD2
 isInitialized	KEYWORD2
-snedText	KEYWORD2
+sendText	KEYWORD2
 startVoiceInput	KEYWORD2
 stopVoiceInput	KEYWORD2
 sendImage	KEYWORD2

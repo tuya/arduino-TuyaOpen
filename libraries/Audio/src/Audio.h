@@ -37,11 +37,10 @@ enum class AudioStatus {
 struct AudioConfig {
     uint32_t micBufferSize;     /**< Microphone buffer size in bytes (size = xxx ms / 10 * 640) */
     uint8_t volume;             /**< Initial volume (0-100, default 60) */
-    uint8_t spkPin;             /**< Speaker control pin */
     bool enableAEC;             /**< Enable acoustic echo cancellation */
     
     AudioConfig() : micBufferSize(0), volume(60), 
-                    spkPin(28), enableAEC(true) {}
+                    enableAEC(true) {}
 };
 
 /**
