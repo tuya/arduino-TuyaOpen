@@ -91,6 +91,7 @@ void app_open_sdk_init(void)
 #endif
 
   // wifi init
+#if defined(ARDUINO_TUYA_T5AI_BOARD) || defined(ARDUINO_TUYA_T5AI_CORE) || defined(ARDUINO_ESP32)
   netmgr_type_e type = 0;
 #if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
   type |= NETCONN_WIFI;
@@ -104,7 +105,13 @@ void app_open_sdk_init(void)
 #endif
   tal_wifi_set_country_code("CN");
   tkl_wifi_set_lp_mode(0, 0);
+
+#else
+  tal_wifi_init(__wifi_callback_event);
+  tal_wifi_set_country_code("CN");
+#endif
 }
+
 
 static void ArduinoThread(void *arg)
 {
