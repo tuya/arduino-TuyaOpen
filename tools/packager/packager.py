@@ -68,7 +68,7 @@ class packager_class():
     def get_qio_binary(self):
         if self.chip_info.chip == 't2':
             return get_qio_binary_t2(self.chip_info)
-        elif self.chip_info.chip == 't3' or self.chip_info.chip == 't5':
+        elif self.chip_info.chip == 't3' or self.chip_info.chip == 'T5':
             return get_qio_binary_t3_t5(self.chip_info)
         elif self.chip_info.chip == 'ln882h':
             return get_qio_binary_ln882h(self.chip_info)

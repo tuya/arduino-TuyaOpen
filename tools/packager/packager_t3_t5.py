@@ -98,7 +98,7 @@ def get_qio_binary_t3_t5(chip_info):
     # Generate json file
     if chip_info.chip == 't3':
         config_str = t3_config_str
-    elif chip_info.chip == 't5':
+    elif chip_info.chip == 'T5':
         config_str = t5_config_str
     else:
         return False
@@ -107,7 +107,7 @@ def get_qio_binary_t3_t5(chip_info):
     config_json["section"][0]["firmware"] = bootloader_file
     
     # For T5: set CP core firmware (section[1]) and AP core firmware (section[2])
-    if chip_info.chip == 't5':
+    if chip_info.chip == 'T5':
         cp_app_file = os.path.join(chip_info.tools_path, 't5_cp_app.bin')
         if not os.path.exists(cp_app_file):
             logging.error(f"CP core app not found: {cp_app_file}")
@@ -127,7 +127,7 @@ def get_qio_binary_t3_t5(chip_info):
     all_app_pack_file = os.path.join(chip_info.output_path, 'all_app_pack.bin')
     
     # Build gen_image command based on chip type
-    if chip_info.chip == 't5':
+    if chip_info.chip == 'T5':
         # T5: 3 files (bootloader + CP core + AP core)
         cp_app_file = os.path.join(chip_info.tools_path, 't5_cp_app.bin')
         gen_image_command = [
@@ -181,7 +181,7 @@ def get_qio_binary_t3_t5(chip_info):
     # Print build success information
     qio_bin_name = os.path.basename(chip_info.bin_file_QIO)
     chip_upper = chip_info.chip.upper()
-    platform_name = "T5AI" if chip_info.chip == 't5' else chip_upper
+    platform_name = "T5AI" if chip_info.chip == 'T5' else chip_upper
     board_name = f"TUYA_{platform_name}_BOARD"
     
     logging.info("")

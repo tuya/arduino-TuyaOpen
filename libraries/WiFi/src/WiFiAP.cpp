@@ -16,7 +16,7 @@ extern "C" {
 #include "lwip/err.h"
 #include "lwip/dns.h"
 
-#if defined(ARDUINO_TUYA_T5AI_BOARD) || defined(ARDUINO_TUYA_T5AI_CORE)
+#if defined(ARDUINO_T5)
 #include "net.h"
 #else
 #include "lwip/net.h"
