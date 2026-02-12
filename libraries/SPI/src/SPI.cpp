@@ -5,13 +5,13 @@ extern "C" {
 #include "tal_log.h"
 }
 
-#if defined(ARDUINO_T2)
+#if defined(ARDUINO_CHIP_T2)
 extern "C" void tkl_spi_set_spic_flag(void);
 #endif
 
 using namespace arduino;
 
-#if defined(ARDUINO_T3)
+#if defined(ARDUINO_CHIP_T3)
 static volatile uint8_t _spi_transfer_complete = 0;
 extern "C" void _arduino_spi_irq_cb(TUYA_SPI_NUM_E port, TUYA_SPI_IRQ_EVT_E event)
 {
@@ -54,7 +54,7 @@ SPIClassTuyaOpen::SPIClassTuyaOpen(TUYA_SPI_NUM_E port, TUYA_SPI_BASE_CFG_T cfg)
 {
   _spiConfigInitAlwaysInline(port, cfg);
 
-#if defined(ARDUINO_T2)
+#if defined(ARDUINO_CHIP_T2)
   tkl_spi_set_spic_flag();
 #endif
 }
@@ -81,7 +81,7 @@ void SPIClassTuyaOpen::begin(int csPin)
     _cfg.type = TUYA_SPI_SOFT_TYPE;
   }
 
-#if defined(ARDUINO_T3)
+#if defined(ARDUINO_CHIP_T3)
   tkl_spi_irq_init(_port, _arduino_spi_irq_cb);
 #endif
 }
@@ -138,7 +138,7 @@ void SPIClassTuyaOpen::endTransaction(void)
   }
   _isBeginTransaction = 0;
 
-#if defined(ARDUINO_T3)
+#if defined(ARDUINO_CHIP_T3)
   while (0 == _spi_transfer_complete) {
     delay(1); // wait for transfer complete
   }
@@ -183,7 +183,7 @@ uint16_t SPIClassTuyaOpen::transfer16(uint16_t data)
 
 void SPIClassTuyaOpen::transfer(void *buf, size_t count)
 {
-#if defined(ARDUINO_T3)
+#if defined(ARDUINO_CHIP_T3)
   _spi_transfer_complete = 0;
   tkl_spi_irq_enable(_port);
   // PR_DEBUG("irq_enable");

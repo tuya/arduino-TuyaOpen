@@ -10,7 +10,7 @@ extern "C" {
 #include "tuya_iot_dp.h"
 #include "tal_time_service.h"
 #include "tal_cli.h"
-#if defined(ARDUINO_T5) || defined(ARDUINO_ESP32)
+#if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_ESP32)
 #include "tuya_authorize.h"
 #endif
 #include "reset_netcfg.h"
@@ -310,7 +310,7 @@ bool TuyaIoTCloudClass::isTimeSync(void)
 void TuyaIoTCloudClass::uartAuthInit()
 {
   tal_cli_init();
-#if defined(ARDUINO_T5) || defined(ARDUINO_ESP32)
+#if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_ESP32)
   tuya_authorize_init();
 #endif
 }
