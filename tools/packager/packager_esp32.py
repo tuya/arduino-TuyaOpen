@@ -76,5 +76,21 @@ def get_qio_binary_esp32(chip_info):
         logging.error("esp32_image_gen failed")
         return False
 
+    # Print build success information
+    qio_bin_name = os.path.basename(chip_info.bin_file_QIO)
+    platform_name = "ESP32"
+    board_name = "ESP32_DEV_MODULE"
+    
+    logging.info("")
+    logging.info("[NOTE]:")
+    logging.info("====================[ BUILD SUCCESS ]====================")
+    logging.info(f" Target    : {qio_bin_name}")
+    logging.info(f" Output    : {chip_info.output_path}")
+    logging.info(f" Platform  : {platform_name}")
+    logging.info(f" Chip      : {platform_name}")
+    logging.info(f" Board     : {board_name}")
+    logging.info(f" Framework : Arduino")
+    logging.info("========================================================")
+
     return True
 

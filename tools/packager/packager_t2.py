@@ -152,7 +152,21 @@ def get_qio_binary_t2(chip_info):
         chip_info.bin_file_QIO = None
         return False
     
-    logging.info(f"QIO binary file: {chip_info.bin_file_QIO}")
+    # Print build success information
+    qio_bin_name = os.path.basename(chip_info.bin_file_QIO)
+    platform_name = "T2"
+    board_name = "TUYA_T2_BOARD"
+    
+    logging.info("")
+    logging.info("[NOTE]:")
+    logging.info("====================[ BUILD SUCCESS ]====================")
+    logging.info(f" Target    : {qio_bin_name}")
+    logging.info(f" Output    : {chip_info.output_path}")
+    logging.info(f" Platform  : {platform_name}")
+    logging.info(f" Chip      : {platform_name}")
+    logging.info(f" Board     : {board_name}")
+    logging.info(f" Framework : Arduino")
+    logging.info("========================================================")
 
     return True
 
