@@ -60,10 +60,10 @@ static char thread_name[] = "arduino_thread";
 /***********************************************************
 ***********************function define**********************
 ***********************************************************/
-// static void __wifi_callback_event(WF_EVENT_E event, void *arg)
-// {
-//   return;
-// }
+static void __wifi_callback_event(WF_EVENT_E event, void *arg)
+{
+  return;
+}
 
 void app_open_sdk_init(void)
 {
@@ -91,7 +91,7 @@ void app_open_sdk_init(void)
 #endif
 
   // wifi init
-#if defined(ARDUINO_TUYA_T5AI_BOARD) || defined(ARDUINO_TUYA_T5AI_CORE) || defined(ARDUINO_ESP32)
+#if defined(ARDUINO_T5) || defined(ARDUINO_ESP32)
   netmgr_type_e type = 0;
 #if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
   type |= NETCONN_WIFI;
@@ -126,7 +126,7 @@ static void ArduinoThread(void *arg)
 #if defined(ARDUINO_LN882H) && defined(ARDUINO_ESP32)
   tkl_uart_deinit(TUYA_UART_NUM_0);
 
-#elif defined(ARDUINO_T3) && defined(ARDUINO_TUYA_T5AI_BOARD) && defined(ARDUINO_TUYA_T5AI_CORE)
+#elif defined(ARDUINO_T3) && defined(ARDUINO_T5)
   tkl_uart_deinit(TUYA_UART_NUM_1); // TODO: close vendor log
 #endif
 
