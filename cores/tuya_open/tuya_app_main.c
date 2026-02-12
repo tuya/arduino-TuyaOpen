@@ -91,7 +91,7 @@ void app_open_sdk_init(void)
 #endif
 
   // wifi init
-#if defined(ARDUINO_T5) || defined(ARDUINO_ESP32)
+#if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_ESP32)
   netmgr_type_e type = 0;
 #if defined(ENABLE_WIFI) && (ENABLE_WIFI == 1)
   type |= NETCONN_WIFI;
@@ -116,17 +116,17 @@ void app_open_sdk_init(void)
 static void ArduinoThread(void *arg)
 {
 
-#if defined(ARDUINO_T2)
+#if defined(ARDUINO_CHIP_T2)
   extern char get_rx2_flag(void);
   while (get_rx2_flag() == 0) {
     tal_system_sleep(1);
   }
-#endif // defined(ARDUINO_T2)
+#endif // defined(ARDUINO_CHIP_T2)
 
-#if defined(ARDUINO_LN882H) && defined(ARDUINO_ESP32)
+#if defined(ARDUINO_CHIP_LN882H) && defined(ARDUINO_CHIP_ESP32)
   tkl_uart_deinit(TUYA_UART_NUM_0);
 
-#elif defined(ARDUINO_T3) && defined(ARDUINO_T5)
+#elif defined(ARDUINO_CHIP_T3) && defined(ARDUINO_CHIP_T5)
   tkl_uart_deinit(TUYA_UART_NUM_1); // TODO: close vendor log
 #endif
 
@@ -137,7 +137,7 @@ static void ArduinoThread(void *arg)
 
 void tuya_app_main(void)
 {
-#if (!defined(ARDUINO_ESP32))
+#if (!defined(ARDUINO_CHIP_ESP32))
   __asm("BL __libc_init_array");
 #endif
 
