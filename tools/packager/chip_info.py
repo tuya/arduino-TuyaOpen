@@ -3,8 +3,9 @@
 import logging
 
 class chip_info_class:
-    def __init__(self, chip, compiler_path, tools_path, output_path, sketch_name, sketch_version):
+    def __init__(self, chip, board, compiler_path, tools_path, output_path, sketch_name, sketch_version):
         self.chip = chip
+        self.board = board
         self.compiler_path = compiler_path
         self.tools_path = tools_path
         self.output_path = output_path
@@ -17,6 +18,7 @@ class chip_info_class:
 
     def print_info(self):
         logging.debug(f"chip: {self.chip}")
+        logging.debug(f"board: {self.board}")
         logging.debug(f"compiler_path: {self.compiler_path}")
         logging.debug(f"tools_path: {self.tools_path}")
         logging.debug(f"output_path: {self.output_path}")

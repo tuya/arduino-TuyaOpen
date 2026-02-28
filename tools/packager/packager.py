@@ -14,8 +14,8 @@ from .packager_ln882h import get_qio_binary_ln882h
 from .packager_esp32 import get_qio_binary_esp32
 
 class packager_class():
-    def __init__(self, chip, compiler_path, tools_path, output_path, sketch_name, sketch_version):
-        self.chip_info = chip_info_class(chip, compiler_path, tools_path, output_path, sketch_name, sketch_version)
+    def __init__(self, chip, board, compiler_path, tools_path, output_path, sketch_name, sketch_version):
+        self.chip_info = chip_info_class(chip, board, compiler_path, tools_path, output_path, sketch_name, sketch_version)
 
     def elf_to_binary(self):
         # .elf -> .bin tool

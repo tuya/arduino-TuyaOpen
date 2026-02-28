@@ -30,6 +30,7 @@ def log_config(level=logging.INFO):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--chip", type=str, required=True, help="chip type")
+    parser.add_argument("--board", type=str, required=True, help="board name")
     parser.add_argument("--compiler-path", type=str, required=True, help="path to compiler tool path")
     parser.add_argument("--vendor-path", type=str, required=True, help="path to chip vendor")
     parser.add_argument("--build-path", type=str, required=True, help="path to build")
@@ -51,6 +52,7 @@ if __name__ == "__main__":
     build_path = os.path.normpath(args.build_path)
 
     logging.debug(f"Chip type: {args.chip}")
+    logging.debug(f"Board name: {args.board}")
     logging.debug(f"Sketch name: {args.sketch_name}")
     logging.debug(f"Compiler_path: {compiler_path}")
     logging.debug(f"Vendor path: {vendor_path}")
@@ -74,7 +76,7 @@ if __name__ == "__main__":
     shutil.copy2(map_file, output_path)
 
     tools_path = os.path.join(vendor_path, 'packager-tools')
-    packager = packager.packager_class(args.chip, compiler_path, tools_path, output_path, args.sketch_name, sketch_version)
+    packager = packager.packager_class(args.chip, args.board, compiler_path, tools_path, output_path, args.sketch_name, sketch_version)
 
     if not packager.elf_to_binary():
         sys.exit(1)

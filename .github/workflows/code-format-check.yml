@@ -1,0 +1,67 @@
+name: Code Format Check
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.c'
+      - '**.cpp'
+      - '**.h'
+      - '**.hpp'
+      - '**.cc'
+      - '**.cxx'
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang-format-14 > /dev/null
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-14 100
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run format check
+        run: |
+          python script/check_format.py --base origin/${{ github.base_ref }}
+
+      - name: Summary on failure
+        if: failure()
+        run: |
+          echo "## ❌ Code Format Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Some C/C++ files do not comply with the code format standards." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Checks performed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- clang-format style check (.clang-format)" >> $GITHUB_STEP_SUMMARY
+          echo "- Chinese character detection" >> $GITHUB_STEP_SUMMARY
+          echo "- File header validation (@file, @brief, @copyright)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**How to fix:**" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo '# Auto-format files' >> $GITHUB_STEP_SUMMARY
+          echo 'clang-format -style=file -i <file>' >> $GITHUB_STEP_SUMMARY
+          echo '# Or run locally to check' >> $GITHUB_STEP_SUMMARY
+          echo 'python script/check_format.py --debug --files <file>' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary on success
+        if: success()
+        run: |
+          echo "## ✅ Code Format Check Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All modified C/C++ files comply with format standards." >> $GITHUB_STEP_SUMMARY

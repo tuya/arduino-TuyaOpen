@@ -1,0 +1,155 @@
+name: Compile Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: Parse boards.txt and build compile matrix (Windows)
+  get-boards:
+    runs-on: windows-latest
+    outputs:
+      matrix: ${{ steps.parse.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build compile matrix from boards.txt
+        id: parse
+        run: |
+          $boardChipMap = @{}
+          Get-Content boards.txt | ForEach-Object {
+            if ($_ -match '^([^#][A-Za-z0-9_]+)\.build\.chip=(.+)$') {
+              $boardChipMap[$Matches[1]] = $Matches[2].Trim()
+            }
+          }
+
+          $repoRoot = (Get-Location).Path -replace '\\','/'
+          $allSketches = Get-ChildItem -Path "libraries" -Filter "*.ino" -Recurse | ForEach-Object {
+            $rel = $_.FullName -replace '\\','/'
+            $rel.Substring($repoRoot.Length + 1)
+          }
+
+          $matrix = @()
+          foreach ($board in ($boardChipMap.Keys | Sort-Object)) {
+            $chip = $boardChipMap[$board]
+            if ($chip -eq "T5") {
+              $sketches = $allSketches -join ";"
+            } else {
+              $sketches = "libraries/AIcomponents/examples/00_IoT_SimpleExample/00_IoT_SimpleExample.ino"
+            }
+            $matrix += @{ board = $board; sketches = $sketches }
+          }
+
+          $json = ConvertTo-Json -Compress @{ include = $matrix }
+          echo "matrix=$json" >> $env:GITHUB_OUTPUT
+          echo "Total board jobs: $($matrix.Count)"
+        shell: pwsh
+
+  # Job 2: Verify package_cn.json can install successfully
+  check-package-cn:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup arduino-cli
+        run: |
+          Invoke-WebRequest -Uri "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip" -OutFile "arduino-cli.zip"
+          Expand-Archive -Path "arduino-cli.zip" -DestinationPath "$env:USERPROFILE\arduino-cli"
+          echo "$env:USERPROFILE\arduino-cli" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Install tuya_open core via package_cn.json
+        run: |
+          $pkgCnJson = (Resolve-Path "package_cn.json").Path -replace '\\','/'
+          $pkgUrl = "file:///$pkgCnJson"
+          arduino-cli config init --overwrite 2>&1 | Out-Null
+          arduino-cli config add board_manager.additional_urls $pkgUrl
+          arduino-cli core update-index 2>&1 | Out-Null
+          if ($LASTEXITCODE -ne 0) { Write-Error "Failed to update core index with package_cn.json."; exit 1 }
+          arduino-cli core install tuya_open:tuya_open 2>&1 | Out-Null
+          if ($LASTEXITCODE -ne 0) { Write-Error "Failed to install tuya_open core via package_cn.json."; exit 1 }
+          $installedStr = (arduino-cli core list) -join "`n"
+          if ($installedStr -notmatch 'tuya_open') { Write-Error "tuya_open core not found after install via package_cn.json."; exit 1 }
+          echo "package_cn.json install check passed."
+        shell: pwsh
+
+  # Job 3: Compile examples for each board on Windows
+  compile:
+    needs: get-boards
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.get-boards.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup arduino-cli
+        run: |
+          Invoke-WebRequest -Uri "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip" -OutFile "arduino-cli.zip"
+          Expand-Archive -Path "arduino-cli.zip" -DestinationPath "$env:USERPROFILE\arduino-cli"
+          echo "$env:USERPROFILE\arduino-cli" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Install tuya_open core
+        run: |
+          $pkgJson = (Resolve-Path "package.json").Path -replace '\\','/'
+          $pkgUrl = "file:///$pkgJson"
+          arduino-cli config init --overwrite
+          arduino-cli config add board_manager.additional_urls $pkgUrl
+          arduino-cli core update-index
+          if ($LASTEXITCODE -ne 0) { Write-Error "Failed to update core index."; exit 1 }
+          arduino-cli core install tuya_open:tuya_open
+          if ($LASTEXITCODE -ne 0) { Write-Error "Failed to install tuya_open core."; exit 1 }
+          $installedStr = (arduino-cli core list) -join "`n"
+          if ($installedStr -notmatch 'tuya_open') { Write-Error "tuya_open core not found after install."; exit 1 }
+        shell: pwsh
+
+      - name: Compile sketches for ${{ matrix.board }}
+        run: |
+          $fqbn = "tuya_open:tuya_open:${{ matrix.board }}"
+          $sketches = "${{ matrix.sketches }}" -split ";"
+          $total = $sketches.Count
+          $failed = @()
+          $i = 0
+          foreach ($sketch in $sketches) {
+            $i++
+            echo "[$i/$total] Compiling: $sketch"
+            arduino-cli compile --fqbn $fqbn $sketch
+            if ($LASTEXITCODE -ne 0) {
+              $failed += $sketch
+              echo "::error::Compilation failed: $sketch"
+            }
+          }
+          if ($failed.Count -gt 0) {
+            Write-Error "$($failed.Count)/$total sketch(es) failed for ${{ matrix.board }}"
+            exit 1
+          }
+          echo "All $total sketch(es) compiled successfully for ${{ matrix.board }}"
+        shell: pwsh
+
+  # Job 4: Summary
+  compile-result:
+    needs: [get-boards, check-package-cn, compile]
+    runs-on: windows-latest
+    if: always()
+    steps:
+      - name: Compile result summary
+        run: |
+          $summary = "## Compile Check Summary`n`n"
+          if ("${{ needs.check-package-cn.result }}" -ne "success") {
+            $summary += "❌ package_cn.json install check failed.`n`n"
+          }
+          if ("${{ needs.compile.result }}" -eq "success") {
+            $summary += "✅ All boards compiled successfully!`n"
+          } else {
+            $summary += "❌ Some boards failed to compile. Please check the logs above.`n"
+          }
+          $summary += "`n**Note:** T5 series boards compile all examples; other boards compile only 00_IoT_SimpleExample.`n"
+          $summary | Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+        shell: pwsh

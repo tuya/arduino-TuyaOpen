@@ -1,13 +1,13 @@
 /**
  * @file IoT_SimpleExample.ino
  * @brief A simple example demonstrating Tuya IoT switch functionality
- * 
+ *
  * This source file provides a basic implementation of a switch device using the Tuya IoT platform.
  * It includes functionality for device initialization, event handling, and network communication.
  * This example is intended for developers looking to create IoT applications that require switch capabilities
  * and integration with the Tuya IoT ecosystem.
- * 
- * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ *
+ * @copyright Copyright (c) 2021-2026 Tuya Inc. All Rights Reserved.
  */
 #include "Log.h"
 #include "TuyaIoT.h"
@@ -19,7 +19,7 @@
 #define TUYA_DEVICE_AUTHKEY "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #define TUYA_PRODUCT_ID     "qhivvyqawogv04e4"
 
-#define APP_LED_PIN         2
+#define APP_LED_PIN 2
 /***********************************************************
 ***********************function define**********************
 ***********************************************************/
@@ -39,15 +39,17 @@ void setup(void)
 
     // license
     tuya_iot_license_t license;
-    int rt = TuyaIoT.readBoardLicense(&license);
+    int                rt = TuyaIoT.readBoardLicense(&license);
     if (OPRT_OK != rt) {
-        license.uuid = (char *)TUYA_DEVICE_UUID;
+        license.uuid    = (char *)TUYA_DEVICE_UUID;
         license.authkey = (char *)TUYA_DEVICE_AUTHKEY;
         Serial.println("Replace the TUYA_DEVICE_UUID and TUYA_DEVICE_AUTHKEY contents, otherwise the demo cannot work");
     }
-    Serial.print("uuid: "); Serial.println(license.uuid);
-    Serial.print("authkey: "); Serial.println(license.authkey);
-    license.uuid = (char *)TUYA_DEVICE_UUID;
+    Serial.print("uuid: ");
+    Serial.println(license.uuid);
+    Serial.print("authkey: ");
+    Serial.println(license.authkey);
+    license.uuid    = (char *)TUYA_DEVICE_UUID;
     license.authkey = (char *)TUYA_DEVICE_AUTHKEY;
     TuyaIoT.setLicense(license.uuid, license.authkey);
 
@@ -57,8 +59,7 @@ void setup(void)
 
 void loop()
 {
-    while(Serial.available() > 0)
-    {
+    while (Serial.available() > 0) {
         char c = Serial.read();
         Serial.write(&c, 1);
     }
@@ -156,8 +157,8 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event)
             PR_DEBUG("devid.%s", dpraw->devid);
         }
 
-        uint32_t index = 0;
-        dp_raw_t *dp = &dpraw->dp;
+        uint32_t  index = 0;
+        dp_raw_t *dp    = &dpraw->dp;
         PR_DEBUG("dpid:%d type:RAW len:%d data:", dp->id, dp->len);
         for (index = 0; index < dp->len; index++) {
             PR_DEBUG_RAW("%02x", dp->data[index]);
@@ -166,7 +167,7 @@ void tuyaIoTEventCallback(tuya_event_msg_t *event)
         TuyaIoT.write((dpraw->dp.id), (dpraw->dp.data), (dpraw->dp.len), 3);
     } break;
 
-    /* TBD.. add other event if necessary */
+        /* TBD.. add other event if necessary */
 
     default:
         break;

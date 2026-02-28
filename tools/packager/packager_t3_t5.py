@@ -180,18 +180,14 @@ def get_qio_binary_t3_t5(chip_info):
 
     # Print build success information
     qio_bin_name = os.path.basename(chip_info.bin_file_QIO)
-    chip_upper = chip_info.chip.upper()
-    platform_name = "T5AI" if chip_info.chip == 'T5' else chip_upper
-    board_name = f"TUYA_{platform_name}_BOARD"
     
     logging.info("")
     logging.info("[NOTE]:")
-    logging.info("====================[ BUILD SUCCESS ]===================")
+    logging.info("====================[ BUILD SUCCESS ]====================")
     logging.info(f" Target    : {qio_bin_name}")
     logging.info(f" Output    : {chip_info.output_path}")
-    logging.info(f" Platform  : {platform_name}")
-    logging.info(f" Chip      : {platform_name}")
-    logging.info(f" Board     : {board_name}")
+    logging.info(f" Chip      : {chip_info.chip}")
+    logging.info(f" Board     : {chip_info.board}")
     logging.info(f" Framework : Arduino")
     logging.info("========================================================")
 

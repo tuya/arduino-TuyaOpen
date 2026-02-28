@@ -25,8 +25,8 @@ recipe.ar.pattern="{compiler.cmd.ar}" {compiler.flags.ar} "{archive_file_path}" 
 recipe.c.combine.pattern="{compiler.cmd.ld}" "{compiler.flags.ld}" {object_files} -Wl,--start-group {archive_file_path} {compiler.flags.libs} -Wl,--end-group {compiler.flags.ld_scripts}
 
 ## objcopy
-recipe.objcopy.bin.1.pattern="{runtime.tools.env-python.path}/python3" -I "{runtime.platform.path}/tools/objcopy.py" --compiler-path "{compiler.path}" --chip "{build.chip}" --vendor-path "{vendor.path}" --build-path "{build.path}" --sketch-name "{build.project_name}"
-recipe.objcopy.bin.1.pattern.windows="{runtime.tools.env-python.path}/python.exe" -I "{runtime.platform.path}/tools/objcopy.py" --compiler-path "{compiler.path}" --chip "{build.chip}" --vendor-path "{vendor.path}" --build-path "{build.path}" --sketch-name "{build.project_name}"
+recipe.objcopy.bin.1.pattern="{runtime.tools.env-python.path}/python3" -I "{runtime.platform.path}/tools/objcopy.py" --compiler-path "{compiler.path}" --chip "{build.chip}" --board "{build.board}" --vendor-path "{vendor.path}" --build-path "{build.path}" --sketch-name "{build.project_name}"
+recipe.objcopy.bin.1.pattern.windows="{runtime.tools.env-python.path}/python.exe" -I "{runtime.platform.path}/tools/objcopy.py" --compiler-path "{compiler.path}" --chip "{build.chip}" --board "{build.board}" --vendor-path "{vendor.path}" --build-path "{build.path}" --sketch-name "{build.project_name}"
 
 ## upload
 tools.tyutool.upload.protocol=serial
