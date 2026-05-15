@@ -75,7 +75,7 @@ void DNSServer::processNextRequest()
     // Allocate buffer for the DNS query
     if (_buf != NULL) 
       free(_buf);
-    _buf = (unsigned char*)malloc(_CurPacketSize * sizeof(char));
+    _buf = (unsigned char*)malloc(_CurPacketSize);
     if (_buf == NULL) 
       return;
 
