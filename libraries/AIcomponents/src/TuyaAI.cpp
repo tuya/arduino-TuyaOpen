@@ -9,7 +9,7 @@
  *
  * @note Button handling is NOT included - use Button class separately
  *
- * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ * @copyright Copyright (c) 2021-2026 Tuya Inc. All Rights Reserved.
  *
  */
 #include "TuyaAI.h"
@@ -17,7 +17,6 @@
 #include "cJSON.h"
 extern "C" {
 #include "tuya_ai_agent.h"
-
 }
 #include "ai_chat_main.h"
 #include "ai_agent.h"
@@ -34,12 +33,12 @@ extern "C" {
 /***********************************************************
 ************************macro define************************
 ***********************************************************/
-#define AI_CHAT_BUTTON_NAME    "ai_chat_button"
-#define TUYA_AI_CHAT_PAR       "ty_ai_chat_par"
+#define AI_CHAT_BUTTON_NAME "ai_chat_button"
+#define TUYA_AI_CHAT_PAR    "ty_ai_chat_par"
 
-#define AI_AUDIO_SLICE_TIME         80     
-#define AI_AUDIO_VAD_ACTIVE_TIME    200 
-#define AI_AUDIO_VAD_OFF_TIME       1000
+#define AI_AUDIO_SLICE_TIME      80
+#define AI_AUDIO_VAD_ACTIVE_TIME 200
+#define AI_AUDIO_VAD_OFF_TIME    1000
 /***********************************************************
 ************************static variables********************
 ***********************************************************/
@@ -48,78 +47,81 @@ TuyaAIClass TuyaAI;
 // Static callback storage for internal event routing
 static TuyaAIClass *_aiInstance = nullptr;
 
-static AI_USER_EVENT_NOTIFY   sg_evt_notify_cb = NULL;
-static THREAD_HANDLE          sg_ai_chat_mode_task = NULL;
-static AI_CHAT_MODE_E         sg_ai_default_mode = AI_CHAT_MODE_HOLD;
-static int                    sg_ai_default_vol = 70;
-static bool                   sg_ai_agent_inited = false;
+static AI_USER_EVENT_NOTIFY sg_evt_notify_cb     = NULL;
+static THREAD_HANDLE        sg_ai_chat_mode_task = NULL;
+static AI_CHAT_MODE_E       sg_ai_default_mode   = AI_CHAT_MODE_HOLD;
+static int                  sg_ai_default_vol    = 70;
+static bool                 sg_ai_agent_inited   = false;
 /***********************************************************
 ***********************static function declarations*********
 ***********************************************************/
-static void _internalEventHandler(AI_NOTIFY_EVENT_T *event);
+static void        _internalEventHandler(AI_NOTIFY_EVENT_T *event);
 static OPERATE_RET __ai_chat_save_config(uint32_t mode, int volume);
 static OPERATE_RET __ai_chat_load_config(uint32_t *mode, int *volume);
-static void __ai_chat_mode_task(void *args);
-static void __ai_handle_event(AI_NOTIFY_EVENT_T *event);
-static int __ai_mqtt_connected_evt(void *data);
+static void        __ai_chat_mode_task(void *args);
+static void        __ai_handle_event(AI_NOTIFY_EVENT_T *event);
+static int         __ai_mqtt_connected_evt(void *data);
 static OPERATE_RET __ai_chat_mode_register(void);
-static void ai_chat_ui_handle_event(AI_NOTIFY_EVENT_T *event);
+static void        ai_chat_ui_handle_event(AI_NOTIFY_EVENT_T *event);
 /***********************************************************
 ***********************TuyaAIClass Implementation***********
 ***********************************************************/
 
-TuyaAIClass::TuyaAIClass() {
-    _initialized = false;
-    _chatMode = AI_CHAT_MODE_WAKEUP;
+TuyaAIClass::TuyaAIClass()
+{
+    _initialized   = false;
+    _chatMode      = AI_CHAT_MODE_WAKEUP;
     _eventCallback = nullptr;
     _stateCallback = nullptr;
     _alertCallback = nullptr;
-    _userArg = nullptr;
-    _aiInstance = this;
+    _userArg       = nullptr;
+    _aiInstance    = this;
 }
 
-TuyaAIClass::~TuyaAIClass() {
+TuyaAIClass::~TuyaAIClass()
+{
     if (_initialized) {
         end();
     }
     _aiInstance = nullptr;
 }
 
-OPERATE_RET TuyaAIClass::begin(AIConfig_t &config) {
+OPERATE_RET TuyaAIClass::begin(AIConfig_t &config)
+{
     if (_initialized) {
         return OPRT_OK;
     }
-    
+
     OPERATE_RET rt = OPRT_OK;
-    
+
     // Store configuration
-    _chatMode = config.chatMode;
+    _chatMode      = config.chatMode;
     _eventCallback = config.eventCb;
     _stateCallback = config.stateCb;
-    _userArg = config.userArg;
-    
+    _userArg       = config.userArg;
+
     // Setup chat mode configuration
     AI_CHAT_MODE_CFG_T aiChatCfg = {
         .default_mode = _chatMode,
         .default_vol  = config.volume,
         .evt_cb       = _internalEventHandler,
     };
-    
+
     // Initialize AI chat module
     uint32_t mode = sg_ai_default_mode;
-    int vol = sg_ai_default_vol;
+    int      vol  = sg_ai_default_vol;
 
     TUYA_CALL_ERR_RETURN(__ai_chat_mode_register());
 
     sg_ai_default_mode = aiChatCfg.default_mode;
     sg_ai_default_vol  = aiChatCfg.default_vol;
-    mode = sg_ai_default_mode;
-    vol  = sg_ai_default_vol;
+    mode               = sg_ai_default_mode;
+    vol                = sg_ai_default_vol;
 
     rt = __ai_chat_load_config(&mode, &vol);
     if (OPRT_OK != rt) {
         mode = sg_ai_default_mode;
-        vol = sg_ai_default_vol;
+        vol  = sg_ai_default_vol;
         TUYA_CALL_ERR_RETURN(__ai_chat_save_config(mode, vol));
         PR_ERR("load chat mode config failed, use default mode %d, volume %d", mode, vol);
     }
@@ -128,91 +130,103 @@ OPERATE_RET TuyaAIClass::begin(AIConfig_t &config) {
 
     ai_user_event_notify_register(__ai_handle_event);
 
-    TUYA_CALL_ERR_RETURN(tal_event_subscribe(EVENT_MQTT_CONNECTED, "ai_agent_init", __ai_mqtt_connected_evt, SUBSCRIBE_TYPE_EMERGENCY));
-    TUYA_CALL_ERR_RETURN(tal_event_subscribe(EVENT_AI_CLIENT_RUN, "client_run", ai_mode_client_run, SUBSCRIBE_TYPE_NORMAL));
+    TUYA_CALL_ERR_RETURN(
+        tal_event_subscribe(EVENT_MQTT_CONNECTED, "ai_agent_init", __ai_mqtt_connected_evt, SUBSCRIBE_TYPE_EMERGENCY));
+    TUYA_CALL_ERR_RETURN(
+        tal_event_subscribe(EVENT_AI_CLIENT_RUN, "client_run", ai_mode_client_run, SUBSCRIBE_TYPE_NORMAL));
 
     THREAD_CFG_T thrd_cfg = {
         .stackDepth = 3 * 1024,
-        .priority = THREAD_PRIO_5,
-        .thrdname = (char *)"ai_chat_mode",
+        .priority   = THREAD_PRIO_5,
+        .thrdname   = (char *)"ai_chat_mode",
 #if defined(ENABLE_EXT_RAM) && (ENABLE_EXT_RAM == 1)
         .psram_mode = 1,
 #endif
     };
 
-    TUYA_CALL_ERR_RETURN(tal_thread_create_and_start(&sg_ai_chat_mode_task, NULL, NULL,\
-                                                     __ai_chat_mode_task, NULL, &thrd_cfg));
-    
+    TUYA_CALL_ERR_RETURN(
+        tal_thread_create_and_start(&sg_ai_chat_mode_task, NULL, NULL, __ai_chat_mode_task, NULL, &thrd_cfg));
+
     _initialized = true;
     return OPRT_OK;
 }
 
-OPERATE_RET TuyaAIClass::begin() {
-    AIConfig_t config = {
-        .chatMode = AI_CHAT_MODE_WAKEUP,
-        .volume = TUYA_AI_DEFAULT_VOLUME,
-        .eventCb = nullptr,
-        .stateCb = nullptr,
-        .userArg = nullptr
-    };
+OPERATE_RET TuyaAIClass::begin()
+{
+    AIConfig_t config = {.chatMode = AI_CHAT_MODE_WAKEUP,
+                         .volume   = TUYA_AI_DEFAULT_VOLUME,
+                         .eventCb  = nullptr,
+                         .stateCb  = nullptr,
+                         .userArg  = nullptr};
     return begin(config);
 }
 
-void TuyaAIClass::end() {
+void TuyaAIClass::end()
+{
     if (!_initialized) {
         return;
     }
-    
+
     // Deinitialize MCP
     MCP.end();
-    
+
     // Deinitialize UI
     UI.end();
-    
+
     // Deinitialize Audio
     Audio.end();
-    
+
     // Deinitialize AI components
     ai_agent_deinit();
     ai_mode_deinit();
-    
+
     _initialized = false;
 }
 
-bool TuyaAIClass::isInitialized() {
+bool TuyaAIClass::isInitialized()
+{
     return _initialized;
 }
 
-OPERATE_RET TuyaAIClass::sendText(const char *text) {
-    if (text == nullptr) return OPRT_INVALID_PARM;
+OPERATE_RET TuyaAIClass::sendText(const char *text)
+{
+    if (text == nullptr)
+        return OPRT_INVALID_PARM;
     return ai_agent_send_text((char *)text);
 }
 
-OPERATE_RET TuyaAIClass::sendText(uint8_t *buffer, int len) {
-    if (buffer == nullptr || len <= 0) return OPRT_INVALID_PARM;
-    
+OPERATE_RET TuyaAIClass::sendText(uint8_t *buffer, int len)
+{
+    if (buffer == nullptr || len <= 0)
+        return OPRT_INVALID_PARM;
+
     char *text = (char *)Malloc(len + 1);
-    if (text == nullptr) return OPRT_MALLOC_FAILED;
-    
+    if (text == nullptr)
+        return OPRT_MALLOC_FAILED;
+
     memcpy(text, buffer, len);
     text[len] = '\0';
-    
+
     OPERATE_RET rt = ai_agent_send_text(text);
     Free(text);
-    
+
     return rt;
 }
 
-OPERATE_RET TuyaAIClass::startVoiceInput() {
+OPERATE_RET TuyaAIClass::startVoiceInput()
+{
     return Audio.startRecording();
 }
 
-OPERATE_RET TuyaAIClass::stopVoiceInput() {
+OPERATE_RET TuyaAIClass::stopVoiceInput()
+{
     return Audio.stopRecording();
 }
 
-OPERATE_RET TuyaAIClass::sendImage(uint8_t *data, uint32_t len) {
-    if (data == nullptr || len == 0) return OPRT_INVALID_PARM;
+OPERATE_RET TuyaAIClass::sendImage(uint8_t *data, uint32_t len)
+{
+    if (data == nullptr || len == 0)
+        return OPRT_INVALID_PARM;
     // return ai_agent_send_image(data, len);
     tuya_ai_input_start(true);
     TIME_T timetep = tal_time_get_posix();
@@ -223,8 +237,10 @@ OPERATE_RET TuyaAIClass::sendImage(uint8_t *data, uint32_t len) {
     return OPRT_OK;
 }
 
-OPERATE_RET TuyaAIClass::sendFile(uint8_t *data, uint32_t len) {
-    if (data == nullptr || len == 0) return OPRT_INVALID_PARM;
+OPERATE_RET TuyaAIClass::sendFile(uint8_t *data, uint32_t len)
+{
+    if (data == nullptr || len == 0)
+        return OPRT_INVALID_PARM;
     // return ai_agent_send_file(data, len);
     tuya_ai_input_start(true);
     tuya_ai_file_input((uint8_t *)data, len, len);
@@ -234,7 +250,8 @@ OPERATE_RET TuyaAIClass::sendFile(uint8_t *data, uint32_t len) {
     return OPRT_OK;
 }
 
-OPERATE_RET TuyaAIClass::setChatMode(AI_CHAT_MODE_E mode) {
+OPERATE_RET TuyaAIClass::setChatMode(AI_CHAT_MODE_E mode)
+{
     OPERATE_RET rt = ai_mode_switch(mode);
     if (rt == OPRT_OK) {
         _chatMode = mode;
@@ -242,78 +259,94 @@ OPERATE_RET TuyaAIClass::setChatMode(AI_CHAT_MODE_E mode) {
     return rt;
 }
 
-AI_CHAT_MODE_E TuyaAIClass::getChatMode() {
+AI_CHAT_MODE_E TuyaAIClass::getChatMode()
+{
     AI_CHAT_MODE_E mode;
     ai_mode_get_curr_mode(&mode);
     return mode;
 }
 
-AI_CHAT_MODE_E TuyaAIClass::nextChatMode() {
+AI_CHAT_MODE_E TuyaAIClass::nextChatMode()
+{
     _chatMode = ai_mode_switch_next();
     return _chatMode;
 }
 
-AI_MODE_STATE_E TuyaAIClass::getState() {
+AI_MODE_STATE_E TuyaAIClass::getState()
+{
     return ai_mode_get_state();
 }
 
-const char* TuyaAIClass::getStateString() {
+const char *TuyaAIClass::getStateString()
+{
     return ai_get_mode_state_str(ai_mode_get_state());
 }
 
-const char* TuyaAIClass::getModeString() {
+const char *TuyaAIClass::getModeString()
+{
     AI_CHAT_MODE_E internalMode;
     ai_mode_get_curr_mode(&internalMode);
     return ai_get_mode_name_str(internalMode);
 }
 
-OPERATE_RET TuyaAIClass::saveModeConfig(AI_CHAT_MODE_E mode, int volume) {
+OPERATE_RET TuyaAIClass::saveModeConfig(AI_CHAT_MODE_E mode, int volume)
+{
     return __ai_chat_save_config((uint32_t)mode, volume);
 }
 
-OPERATE_RET TuyaAIClass::loadModeConfig(AI_CHAT_MODE_E *mode, int *volume) {
+OPERATE_RET TuyaAIClass::loadModeConfig(AI_CHAT_MODE_E *mode, int *volume)
+{
     if (mode == nullptr || volume == nullptr) {
         return OPRT_INVALID_PARM;
     }
-    uint32_t temp = 0;
-    OPERATE_RET rt = __ai_chat_load_config(&temp, volume);
-    *mode = (AI_CHAT_MODE_E)temp;
+    uint32_t    temp = 0;
+    OPERATE_RET rt   = __ai_chat_load_config(&temp, volume);
+    *mode            = (AI_CHAT_MODE_E)temp;
     return rt;
 }
 
-OPERATE_RET TuyaAIClass::modeKeyHandle(uint8_t event, void *arg) {
+OPERATE_RET TuyaAIClass::modeKeyHandle(uint8_t event, void *arg)
+{
     return ai_mode_handle_key((TDL_BUTTON_TOUCH_EVENT_E)event, arg);
 }
 
-OPERATE_RET TuyaAIClass::interruptChat() {
+OPERATE_RET TuyaAIClass::interruptChat()
+{
     Audio.stop();
     tuya_ai_agent_event(AI_EVENT_CHAT_BREAK, 0);
     return OPRT_OK;
 }
 
-OPERATE_RET TuyaAIClass::switchRole(const char *roleName) {
-    if (roleName == nullptr) return OPRT_INVALID_PARM;
+OPERATE_RET TuyaAIClass::switchRole(const char *roleName)
+{
+    if (roleName == nullptr)
+        return OPRT_INVALID_PARM;
     return ai_agent_role_switch((char *)roleName);
 }
 
-OPERATE_RET TuyaAIClass::requestCloudAlert(AI_AUDIO_ALERT_TYPE_E type) {
+OPERATE_RET TuyaAIClass::requestCloudAlert(AI_AUDIO_ALERT_TYPE_E type)
+{
     return ai_agent_cloud_alert((AI_ALERT_TYPE_E)type);
 }
 
-void TuyaAIClass::setEventCallback(AIEventCallback_t callback, void *arg) {
+void TuyaAIClass::setEventCallback(AIEventCallback_t callback, void *arg)
+{
     _eventCallback = callback;
-    _userArg = arg;
+    _userArg       = arg;
 }
 
-void TuyaAIClass::setStateCallback(AIStateCallback_t callback) {
+void TuyaAIClass::setStateCallback(AIStateCallback_t callback)
+{
     _stateCallback = callback;
 }
 
-void TuyaAIClass::setAlertCallback(AIAlertCallback_t callback) {
+void TuyaAIClass::setAlertCallback(AIAlertCallback_t callback)
+{
     _alertCallback = callback;
 }
 
-const char* TuyaAIClass::getLanguageCode() {
+const char *TuyaAIClass::getLanguageCode()
+{
     return LANG_CODE;
 }
 
@@ -321,14 +354,15 @@ const char* TuyaAIClass::getLanguageCode() {
 ***********************Static Functions*********************
 ***********************************************************/
 
-static void _internalEventHandler(AI_NOTIFY_EVENT_T *event) {
+static void _internalEventHandler(AI_NOTIFY_EVENT_T *event)
+{
     if (_aiInstance == nullptr || event == nullptr) {
         return;
     }
-    
+
     // Convert internal event to external event type
     AI_USER_EVT_TYPE_E extEvent = (event->type);
-    
+
     // Handle state changes
     if (event->type == AI_USER_EVT_MODE_STATE_UPDATE) {
         AIStateCallback_t stateCb = _aiInstance->getStateCallback();
@@ -337,7 +371,7 @@ static void _internalEventHandler(AI_NOTIFY_EVENT_T *event) {
             stateCb(state);
         }
     }
-    
+
     // Handle alert events
     if (event->type == AI_USER_EVT_PLAY_ALERT) {
         AIAlertCallback_t alertCb = _aiInstance->getAlertCallback();
@@ -346,98 +380,111 @@ static void _internalEventHandler(AI_NOTIFY_EVENT_T *event) {
             if (event->data) {
                 AI_AUDIO_ALERT_TYPE_E alertType = (AI_AUDIO_ALERT_TYPE_E)(uintptr_t)event->data;
                 if (alertCb(alertType) == 0) {
-                    return;  // User handled the alert
+                    return; // User handled the alert
                 }
             }
         }
     }
-    
+
     // Forward event to user callback
     AIEventCallback_t eventCb = _aiInstance->getEventCallback();
     if (eventCb != nullptr) {
         uint8_t *data = nullptr;
-        uint32_t len = 0;
-        
+        uint32_t len  = 0;
+
         switch (event->type) {
-            // ASR events - pass recognized text data
-            case AI_USER_EVT_ASR_OK:
-            case AI_USER_EVT_ASR_EMPTY:
-                if (event->data) {
-                    AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
-                    data = (uint8_t *)textData->data;
-                    len = textData->datalen;
-                }
-                break;
-            
-            // Text stream events - pass AI response text data
-            case AI_USER_EVT_TEXT_STREAM_START:
-            case AI_USER_EVT_TEXT_STREAM_DATA:
-            case AI_USER_EVT_TEXT_STREAM_STOP:
-                if (event->data) {
-                    AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
-                    data = (uint8_t *)textData->data;
-                    len = textData->datalen;
-                }
-                break;
-            
-            // TTS audio data event - pass raw audio data (MP3/OPUS)
-            case AI_USER_EVT_TTS_DATA:
-                if (event->data) {
-                    AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
-                    data = (uint8_t *)textData->data;
-                    len = textData->datalen;
-                }
-                break;
-                
-            // Emotion events - pass emoji/name structure
-            case AI_USER_EVT_EMOTION:
-            case AI_USER_EVT_LLM_EMOTION:
-                if (event->data) {
-                    AI_NOTIFY_EMO_T *emoData = (AI_NOTIFY_EMO_T *)event->data;
-                    data = (uint8_t *)emoData;
-                    len = sizeof(AI_NOTIFY_EMO_T);
-                }
-                break;
-            
-            // MIC data event - pass raw PCM audio data
-            case AI_USER_EVT_MIC_DATA:
-                if (event->data) {
-                    AI_NOTIFY_MIC_DATA_T *micData = (AI_NOTIFY_MIC_DATA_T *)event->data;
-                    data = micData->data;
-                    len = micData->data_len;
-                }
-                break;
-            
-            // Skill event - pass cJSON pointer as data
-            case AI_USER_EVT_SKILL:
-                // data is cJSON*, pass raw pointer
-                data = (uint8_t *)event->data;
-                len = event->data ? 1 : 0;  // non-zero len indicates valid data
-                break;
+        // ASR events - pass recognized text data
+        case AI_USER_EVT_ASR_OK:
+        case AI_USER_EVT_ASR_EMPTY:
+            if (event->data) {
+                AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
+                data                       = (uint8_t *)textData->data;
+                len                        = textData->datalen;
+            }
+            break;
 
-            case AI_USER_EVT_MODE_SWITCH:
-                // Mode switch event - pass new mode as uint32_t
-                if (event->data != nullptr) {
-                    uint32_t *modePtr = (uint32_t *)event->data;
-                    data = (uint8_t *)modePtr;
-                    len = sizeof(uint32_t);
-                }
-                break;
+        // Text stream events - pass AI response text data
+        case AI_USER_EVT_TEXT_STREAM_START:
+        case AI_USER_EVT_TEXT_STREAM_DATA:
+        case AI_USER_EVT_TEXT_STREAM_STOP:
+            if (event->data) {
+                AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
+                data                       = (uint8_t *)textData->data;
+                len                        = textData->datalen;
+            }
+            break;
 
-            case AI_USER_EVT_MODE_STATE_UPDATE:
-                // Mode state update event - pass new state as uint32_t
-                break;
-                
-            default:
+        // TTS audio data event - pass raw audio data (MP3/OPUS)
+        case AI_USER_EVT_TTS_DATA:
+            if (event->data) {
+                AI_NOTIFY_TEXT_T *textData = (AI_NOTIFY_TEXT_T *)event->data;
+                data                       = (uint8_t *)textData->data;
+                len                        = textData->datalen;
+            }
+            break;
+
+        // Emotion events - pass emoji/name structure
+        case AI_USER_EVT_EMOTION:
+        case AI_USER_EVT_LLM_EMOTION:
+            if (event->data) {
+                AI_NOTIFY_EMO_T *emoData = (AI_NOTIFY_EMO_T *)event->data;
+                data                     = (uint8_t *)emoData;
+                len                      = sizeof(AI_NOTIFY_EMO_T);
+            }
+            break;
+
+        // Picture events - upstream passes the album filename as a C string
+        case AI_USER_EVT_GENERATE_PICTURE:
+        case AI_USER_EVT_GET_PICTURE_FROM_APP:
+            if (event->data) {
                 data = (uint8_t *)event->data;
-                len = 0;
-                break;
+                len  = strlen((const char *)event->data);
+            }
+            break;
+
+        // Signalling events that carry no payload
+        case AI_USER_EVT_SEND_PICTURE_END:
+        case AI_USER_EVT_KEY_WAKEUP:
+            break;
+
+        // MIC data event - pass raw PCM audio data
+        case AI_USER_EVT_MIC_DATA:
+            if (event->data) {
+                AI_NOTIFY_MIC_DATA_T *micData = (AI_NOTIFY_MIC_DATA_T *)event->data;
+                data                          = micData->data;
+                len                           = micData->data_len;
+            }
+            break;
+
+        // Skill event - pass cJSON pointer as data
+        case AI_USER_EVT_SKILL:
+            // data is cJSON*, pass raw pointer
+            data = (uint8_t *)event->data;
+            len  = event->data ? 1 : 0; // non-zero len indicates valid data
+            break;
+
+        case AI_USER_EVT_MODE_SWITCH:
+            // Mode switch event - pass new mode as uint32_t
+            if (event->data != nullptr) {
+                uint32_t *modePtr = (uint32_t *)event->data;
+                data              = (uint8_t *)modePtr;
+                len               = sizeof(uint32_t);
+            }
+            break;
+
+        case AI_USER_EVT_MODE_STATE_UPDATE:
+            // Mode state update event - pass new state as uint32_t
+            break;
+
+        default:
+            data = (uint8_t *)event->data;
+            len  = 0;
+            break;
         }
-        
+
         eventCb(extEvent, data, len, _aiInstance->getUserArg());
     }
 }
-
 
 /**
 @brief Save chat mode and volume configuration
@@ -447,8 +494,8 @@ static void _internalEventHandler(AI_NOTIFY_EVENT_T *event) {
 */
 static OPERATE_RET __ai_chat_save_config(uint32_t mode, int volume)
 {
-    OPERATE_RET rt = OPRT_OK;
-    char buf[64] = {0};
+    OPERATE_RET rt      = OPRT_OK;
+    char        buf[64] = {0};
 
     memset(buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "{\"volume\": %d, \"chat_mode\":%d}", volume, (int)mode);
@@ -468,13 +515,13 @@ static OPERATE_RET __ai_chat_save_config(uint32_t mode, int volume)
 */
 static OPERATE_RET __ai_chat_load_config(uint32_t *mode, int *volume)
 {
-    OPERATE_RET rt = OPRT_OK;
-    uint8_t *value = NULL;
-    size_t len = 0;
-    uint32_t read_mode = 0;
-    int read_vol = sg_ai_default_vol;
+    OPERATE_RET rt        = OPRT_OK;
+    uint8_t    *value     = NULL;
+    size_t      len       = 0;
+    uint32_t    read_mode = 0;
+    int         read_vol  = sg_ai_default_vol;
 
-    if(NULL == mode || NULL == volume) {
+    if (NULL == mode || NULL == volume) {
         return OPRT_INVALID_PARM;
     }
 
@@ -503,7 +550,7 @@ static OPERATE_RET __ai_chat_load_config(uint32_t *mode, int *volume)
 
     cJSON_Delete(root);
 
-    *mode = read_mode;
+    *mode   = read_mode;
     *volume = read_vol;
 
     return OPRT_OK;
@@ -516,50 +563,46 @@ static OPERATE_RET __ai_chat_load_config(uint32_t *mode, int *volume)
 */
 static void __ai_handle_event(AI_NOTIFY_EVENT_T *event)
 {
-    if(NULL == event) {
+    if (NULL == event) {
         return;
     }
 
     ai_mode_handle_event(event);
 
-    switch(event->type) {
+    switch (event->type) {
 #if defined(ENABLE_COMP_AI_AUDIO) && (ENABLE_COMP_AI_AUDIO == 1)
-        case AI_USER_EVT_PLAY_CTL_PLAY:
-        case AI_USER_EVT_PLAY_CTL_RESUME:{
-            ai_audio_player_set_resume(true);
-        }
-        break;
-        case AI_USER_EVT_PLAY_CTL_PAUSE:{
-            ai_audio_player_stop(AI_AUDIO_PLAYER_BG);
-        }
-        break;
-        case AI_USER_EVT_PLAY_CTL_REPLAY:{
-            ai_audio_player_set_replay(true);
-        }
-        break;
-        case AI_USER_EVT_PLAY_ALERT:{
-            ai_audio_player_alert((AI_AUDIO_ALERT_TYPE_E)(uintptr_t)event->data);
-        }
-        break;
+    case AI_USER_EVT_PLAY_CTL_PLAY:
+    case AI_USER_EVT_PLAY_CTL_RESUME: {
+        ai_audio_player_set_resume(true);
+    } break;
+    case AI_USER_EVT_PLAY_CTL_PAUSE: {
+        ai_audio_player_stop(AI_AUDIO_PLAYER_BG);
+    } break;
+    case AI_USER_EVT_PLAY_CTL_REPLAY: {
+        ai_audio_player_set_replay(true);
+    } break;
+    case AI_USER_EVT_PLAY_ALERT: {
+        ai_audio_player_alert((AI_AUDIO_ALERT_TYPE_E)(uintptr_t)event->data);
+    } break;
 #endif
-        default:
+    default:
 #if defined(ENABLE_COMP_AI_DISPLAY) && (ENABLE_COMP_AI_DISPLAY == 1)
-            ai_chat_ui_handle_event(event);
+        ai_chat_ui_handle_event(event);
 #endif
         break;
     }
 
     if (sg_evt_notify_cb) {
         sg_evt_notify_cb(event);
-    }   
+    }
 }
 
 static int __ai_mqtt_connected_evt(void *data)
 {
     PR_DEBUG("AI MQTT connected event received");
-    OPERATE_RET rt = OPRT_OK;
-    uint32_t mode = sg_ai_default_mode;
-    int vol = sg_ai_default_vol;
+    OPERATE_RET rt   = OPRT_OK;
+    uint32_t    mode = sg_ai_default_mode;
+    int         vol  = sg_ai_default_vol;
 
     TUYA_CALL_ERR_RETURN(ai_agent_init());
 
@@ -579,7 +622,7 @@ static int __ai_mqtt_connected_evt(void *data)
 */
 static void __ai_chat_mode_task(void *args)
 {
-    while(tal_thread_get_state(sg_ai_chat_mode_task) == THREAD_STATE_RUNNING) {
+    while (tal_thread_get_state(sg_ai_chat_mode_task) == THREAD_STATE_RUNNING) {
         ai_mode_task_running(args);
         tal_system_sleep(20);
     }
@@ -636,84 +679,86 @@ static void ai_chat_ui_handle_event(AI_NOTIFY_EVENT_T *event)
     }
 
     switch (event->type) {
-        case AI_USER_EVT_ASR_OK: {
-            text = (AI_NOTIFY_TEXT_T *)event->data;
+    case AI_USER_EVT_ASR_OK: {
+        text = (AI_NOTIFY_TEXT_T *)event->data;
 
-            if (text && text->datalen > 0 && text->data) {
-                ai_ui_disp_msg(AI_UI_DISP_USER_MSG, (uint8_t *)text->data, text->datalen);
-            }
-        } break;
-        case AI_USER_EVT_TEXT_STREAM_START: {
-            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_START, NULL, 0);
+        if (text && text->datalen > 0 && text->data) {
+            ai_ui_disp_msg(AI_UI_DISP_USER_MSG, (uint8_t *)text->data, text->datalen);
+        }
+    } break;
+    case AI_USER_EVT_TEXT_STREAM_START: {
+        ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_START, NULL, 0);
 
-            text = (AI_NOTIFY_TEXT_T *)event->data;
-            if (text && text->datalen > 0 && text->data) {
-                ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
-            }
-        } break;
-        case AI_USER_EVT_TEXT_STREAM_DATA: {
-            text = (AI_NOTIFY_TEXT_T *)event->data;
-            if (text && text->datalen > 0 && text->data) {
-                ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
-            }
-        } break;
-        case AI_USER_EVT_TEXT_STREAM_STOP: {
-            text = (AI_NOTIFY_TEXT_T *)event->data;
-            if (text && text->datalen > 0 && text->data) {
-                ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
-            }
-            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_END, NULL, 0);
-        } break;
-        case AI_USER_EVT_CHAT_BREAK: {
-            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_INTERRUPT, NULL, 0);
-        } break;
-        case AI_USER_EVT_LLM_EMOTION:
-        case AI_USER_EVT_EMOTION: {
-            AI_NOTIFY_EMO_T *emo = (AI_NOTIFY_EMO_T *)(event->data);
+        text = (AI_NOTIFY_TEXT_T *)event->data;
+        if (text && text->datalen > 0 && text->data) {
+            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
+        }
+    } break;
+    case AI_USER_EVT_TEXT_STREAM_DATA: {
+        text = (AI_NOTIFY_TEXT_T *)event->data;
+        if (text && text->datalen > 0 && text->data) {
+            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
+        }
+    } break;
+    case AI_USER_EVT_TEXT_STREAM_STOP: {
+        text = (AI_NOTIFY_TEXT_T *)event->data;
+        if (text && text->datalen > 0 && text->data) {
+            ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_DATA, (uint8_t *)text->data, text->datalen);
+        }
+        ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_END, NULL, 0);
+    } break;
+    case AI_USER_EVT_CHAT_BREAK: {
+        ai_ui_disp_msg(AI_UI_DISP_AI_MSG_STREAM_INTERRUPT, NULL, 0);
+    } break;
+    case AI_USER_EVT_LLM_EMOTION:
+    case AI_USER_EVT_EMOTION: {
+        AI_NOTIFY_EMO_T *emo = (AI_NOTIFY_EMO_T *)(event->data);
 
-            if (emo) {
-                PR_NOTICE("emoji: %s, name: %s", emo->emoji, emo->name);
-                ai_ui_disp_msg(AI_UI_DISP_EMOTION, (uint8_t *)emo->name, strlen(emo->name));
-            }
-        } break;
-        case AI_USER_EVT_MODE_STATE_UPDATE: {
-            AI_MODE_STATE_E state = (AI_MODE_STATE_E)(uintptr_t)event->data;
-            __ai_chat_disp_mode_state(state);
-        } break;
-        case AI_USER_EVT_MODE_SWITCH: {
-            // AI_CHAT_MODE_E mode = (AI_CHAT_MODE_E)(uintptr_t)event->data;
-            // char          *name = ai_get_mode_name_str(mode);
-            // if (NULL == name) {
-            //     PR_NOTICE("mode name str is null");
-            //     break;
-            // }
-            if (event->data != nullptr) {
-                int modeValue = (int)(intptr_t)event->data;
-                PR_DEBUG("Internal mode switch event, new mode: %d", modeValue);
-                const char *modeStr = NULL;
-                switch (modeValue) {
-                    case AI_CHAT_MODE_HOLD:     modeStr = HOLD_TALK; break;
-                    case AI_CHAT_MODE_ONE_SHOT: modeStr = TRIG_TALK; break;
-                    case AI_CHAT_MODE_WAKEUP:   modeStr = WAKEUP_TALK; break;
-                    case AI_CHAT_MODE_FREE:     modeStr = FREE_TALK; break;
-                    default:                    modeStr = "---"; break;
-                }
-                ai_ui_disp_msg(AI_UI_DISP_CHAT_MODE, (uint8_t *)modeStr, strlen(modeStr));
-            }
-        } break;
-        case AI_USER_EVT_VIDEO_DISPLAY_START: {
-            AI_NOTIFY_VIDEO_START_T *video_start = (AI_NOTIFY_VIDEO_START_T *)(event->data);
-            if (NULL == video_start) {
-                PR_ERR("video start param is null");
+        if (emo) {
+            PR_NOTICE("emoji: %s, name: %s", emo->emoji, emo->name);
+            ai_ui_disp_msg(AI_UI_DISP_EMOTION, (uint8_t *)emo->name, strlen(emo->name));
+        }
+    } break;
+    case AI_USER_EVT_MODE_STATE_UPDATE: {
+        AI_MODE_STATE_E state = (AI_MODE_STATE_E)(uintptr_t)event->data;
+        __ai_chat_disp_mode_state(state);
+    } break;
+    case AI_USER_EVT_MODE_SWITCH: {
+        // AI_CHAT_MODE_E mode = (AI_CHAT_MODE_E)(uintptr_t)event->data;
+        // char          *name = ai_get_mode_name_str(mode);
+        // if (NULL == name) {
+        //     PR_NOTICE("mode name str is null");
+        //     break;
+        // }
+        if (event->data != nullptr) {
+            int modeValue = (int)(intptr_t)event->data;
+            PR_DEBUG("Internal mode switch event, new mode: %d", modeValue);
+            const char *modeStr = NULL;
+            switch (modeValue) {
+            case AI_CHAT_MODE_HOLD:
+                modeStr = HOLD_TALK;
+                break;
+            case AI_CHAT_MODE_ONE_SHOT:
+                modeStr = TRIG_TALK;
+                break;
+            case AI_CHAT_MODE_WAKEUP:
+                modeStr = WAKEUP_TALK;
+                break;
+            case AI_CHAT_MODE_FREE:
+                modeStr = FREE_TALK;
+                break;
+            default:
+                modeStr = "---";
                 break;
             }
-
-            ai_ui_camera_start(video_start->camera_width, video_start->camera_height);
-        } break;
-        case AI_USER_EVT_VIDEO_DISPLAY_END:
-            ai_ui_camera_end();
-            break;
-        default:
-            break;
+            ai_ui_disp_msg(AI_UI_DISP_CHAT_MODE, (uint8_t *)modeStr, strlen(modeStr));
+        }
+    } break;
+    // AI_USER_EVT_VIDEO_DISPLAY_START / _END were removed upstream: the camera
+    // page now opens and closes itself inside ai_ui_manage (__page_camera_open /
+    // __page_camera_close, gated on ENABLE_COMP_AI_VIDEO), so these events are
+    // never delivered to the user callback any more.
+    default:
+        break;
     }
 }

@@ -15,7 +15,7 @@
  * - Multi-language support
  * - Clean abstraction without exposing internal C headers
  *
- * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.
+ * @copyright Copyright (c) 2021-2026 Tuya Inc. All Rights Reserved.
  *
  */
 #ifndef __TUYA_AI_H_
@@ -32,12 +32,14 @@
 #include "TuyaAudio.h"
 #include "TuyaMCP.h"
 #include "TuyaSkill.h"
+#include "TuyaPicture.h"
+#include "TuyaVideo.h"
 /***********************************************************
 ************************macro define************************
 ***********************************************************/
-#define TUYA_AI_DEFAULT_VOLUME      70
-#define TUYA_AI_MAX_VOLUME          100
-#define TUYA_AI_MIN_VOLUME          0
+#define TUYA_AI_DEFAULT_VOLUME 70
+#define TUYA_AI_MAX_VOLUME     100
+#define TUYA_AI_MIN_VOLUME     0
 
 /***********************************************************
 ***********************typedef define***********************
@@ -77,11 +79,11 @@ typedef int (*AIAlertCallback_t)(AI_AUDIO_ALERT_TYPE_E type);
  * @brief AI Configuration Structure
  */
 typedef struct {
-    AI_CHAT_MODE_E      chatMode;       /**< Chat mode selection (from ai_manage_mode.h) */
-    int                 volume;         /**< Default volume (0-100) */
-    AIEventCallback_t   eventCb;        /**< Event callback function */
-    AIStateCallback_t   stateCb;        /**< State change callback */
-    void               *userArg;        /**< User argument for callbacks */
+    AI_CHAT_MODE_E    chatMode; /**< Chat mode selection (from ai_manage_mode.h) */
+    int               volume;   /**< Default volume (0-100) */
+    AIEventCallback_t eventCb;  /**< Event callback function */
+    AIStateCallback_t stateCb;  /**< State change callback */
+    void             *userArg;  /**< User argument for callbacks */
 } AIConfig_t;
 
 /***********************************************************
@@ -91,21 +93,22 @@ typedef struct {
 /**
  * @class TuyaAIClass
  * @brief Main class for Tuya AI functionality with nested sub-classes
- * 
+ *
  * This class provides a comprehensive interface for interacting with the
  * Tuya AI system. It contains nested classes for UI, Audio, and MCP.
- * 
+ *
  * @note Button handling is NOT included - use Button class separately
- * 
+ *
  * @endcode
  */
-class TuyaAIClass {
+class TuyaAIClass
+{
 public:
     /**
      * @brief Constructor
      */
     TuyaAIClass();
-    
+
     /**
      * @brief Destructor
      */
@@ -114,16 +117,18 @@ public:
     //==========================================================================
     // Nested Class Instances
     //==========================================================================
-    
-    TuyaUIClass    UI;      /**< UI display management */
-    TuyaAudioClass Audio;   /**< Audio input/output management */
-    TuyaMCPClass   MCP;     /**< MCP (Model Context Protocol) management */
-    TuyaSkillClass Skill;   /**< Skill data parsing */
+
+    TuyaUIClass      UI;      /**< UI display management */
+    TuyaAudioClass   Audio;   /**< Audio input/output management */
+    TuyaMCPClass     MCP;     /**< MCP (Model Context Protocol) management */
+    TuyaSkillClass   Skill;   /**< Skill data parsing */
+    TuyaPictureClass Picture; /**< On-device picture album, AI picture input/output */
+    TuyaVideoClass   Video;   /**< Camera-backed AI video input */
 
     //==========================================================================
     // Initialization & Configuration
     //==========================================================================
-    
+
     /**
      * @brief Initialize AI component with configuration
      * @param config AI configuration structure
@@ -131,18 +136,18 @@ public:
      * @note This only initializes core AI, call UI.begin() and MCP.begin() separately
      */
     OPERATE_RET begin(AIConfig_t &config);
-    
+
     /**
      * @brief Initialize AI component with default settings
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET begin();
-    
+
     /**
      * @brief Deinitialize AI component
      */
     void end();
-    
+
     /**
      * @brief Check if AI component is initialized
      * @return true if initialized
@@ -152,14 +157,14 @@ public:
     //==========================================================================
     // Input Methods
     //==========================================================================
-    
+
     /**
      * @brief Send text input to AI
      * @param text Text content to send
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET sendText(const char *text);
-    
+
     /**
      * @brief Send text input from buffer
      * @param buffer Text buffer
@@ -167,19 +172,19 @@ public:
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET sendText(uint8_t *buffer, int len);
-    
+
     /**
      * @brief Start voice input recording
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET startVoiceInput();
-    
+
     /**
      * @brief Stop voice input recording
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET stopVoiceInput();
-    
+
     /**
      * @brief Send image to AI for analysis
      * @param data Image data buffer
@@ -187,7 +192,7 @@ public:
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET sendImage(uint8_t *data, uint32_t len);
-    
+
     /**
      * @brief Send file to AI
      * @param data File data buffer
@@ -199,44 +204,44 @@ public:
     //==========================================================================
     // Chat Mode Control
     //==========================================================================
-    
+
     /**
      * @brief Set chat mode
      * @param mode Chat mode to set (AI_CHAT_MODE_E from ai_manage_mode.h)
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET setChatMode(AI_CHAT_MODE_E mode);
-    
+
     /**
      * @brief Get current chat mode
      * @return Current chat mode (AI_CHAT_MODE_E)
      */
     AI_CHAT_MODE_E getChatMode();
-    
+
     /**
      * @brief Switch to next chat mode
      * @return New chat mode (AI_CHAT_MODE_E)
      */
     AI_CHAT_MODE_E nextChatMode();
-    
+
     /**
      * @brief Get current AI state
      * @return Current AI state (AI_MODE_STATE_E from ai_manage_mode.h)
      */
     AI_MODE_STATE_E getState();
-    
+
     /**
      * @brief Get state as string
      * @return State string representation
      */
-    const char* getStateString();
-    
+    const char *getStateString();
+
     /**
      * @brief Get mode as string
      * @return Mode string representation
      */
-    const char* getModeString();
-    
+    const char *getModeString();
+
     /**
      * @brief Save current mode configuration
      * @return OPRT_OK on success, error code on failure
@@ -264,14 +269,14 @@ public:
     //==========================================================================
     // AI Agent Control
     //==========================================================================
-    
+
     /**
      * @brief Switch AI agent role/persona
      * @param roleName Role name to switch to
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET switchRole(const char *roleName);
-    
+
     /**
      * @brief Request cloud alert from AI
      * @param type Alert type (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
@@ -282,20 +287,20 @@ public:
     //==========================================================================
     // Callback Registration
     //==========================================================================
-    
+
     /**
      * @brief Set event callback
      * @param callback Event callback function
      * @param arg      User argument passed to callback
      */
     void setEventCallback(AIEventCallback_t callback, void *arg = nullptr);
-    
+
     /**
      * @brief Set state change callback
      * @param callback State callback function
      */
     void setStateCallback(AIStateCallback_t callback);
-    
+
     /**
      * @brief Set custom alert callback
      * @param callback Alert callback function
@@ -306,30 +311,30 @@ public:
     //==========================================================================
     // Language Configuration
     //==========================================================================
-    
+
     /**
      * @brief Get current language code
      * @return Language code string (e.g., "zh-CN", "en-US")
      */
-    const char* getLanguageCode();
+    const char *getLanguageCode();
 
     //==========================================================================
     // Convenience Methods (delegate to sub-classes)
     //==========================================================================
-    
+
     /**
      * @brief Set audio volume (convenience, delegates to Audio.setVolume)
      * @param volume Volume value (0-100)
      * @return OPRT_OK on success, error code on failure
      */
     OPERATE_RET setVolume(int volume) { return Audio.setVolume(volume); }
-    
+
     /**
      * @brief Get audio volume (convenience, delegates to Audio.getVolume)
      * @return Current volume (0-100)
      */
     int getVolume() { return Audio.getVolume(); }
-    
+
     /**
      * @brief Play alert (convenience, delegates to Audio.playAlert)
      * @param type Alert type (AI_AUDIO_ALERT_TYPE_E from ai_audio_player.h)
@@ -342,16 +347,16 @@ public:
     AIEventCallback_t getEventCallback() { return _eventCallback; }
     AIStateCallback_t getStateCallback() { return _stateCallback; }
     AIAlertCallback_t getAlertCallback() { return _alertCallback; }
-    void* getUserArg() { return _userArg; }
+    void             *getUserArg() { return _userArg; }
 
 private:
-    bool _initialized;
+    bool           _initialized;
     AI_CHAT_MODE_E _chatMode;
-    
-    AIEventCallback_t   _eventCallback;
-    AIStateCallback_t   _stateCallback;
-    AIAlertCallback_t   _alertCallback;
-    void               *_userArg;
+
+    AIEventCallback_t _eventCallback;
+    AIStateCallback_t _stateCallback;
+    AIAlertCallback_t _alertCallback;
+    void             *_userArg;
 };
 
 // Global instance

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
+import sys
 import shutil
 import logging
 import subprocess
@@ -13,11 +15,16 @@ class PackagePlatform:
 
     def __init__(self, package_info, data_path, config_path=None):
         self.package_info = package_info
-        self.clone_path = os.path.join(self.package_info.output_path, self.package_info.name)
+        # Clone into the version-independent cache so gitignored toolchain
+        # downloads survive across release versions; fall back to the old
+        # per-version layout when no cache path is provided.
+        clone_root = package_info.cache_path or package_info.output_path
+        self.clone_path = os.path.join(clone_root, self.package_info.name)
         self.data_path = data_path
         self.config_path = config_path or data_path
         self.staging_path = data_path
         self.build_app_path = os.path.join(self.clone_path, self.package_info.build_app)
+        self.clone_python = "python"
         self.handler = PackageHandler()
 
     def git_clone(self):
@@ -60,26 +67,93 @@ class PackagePlatform:
         logging.info(f"Copy {ini_file} to {app_ini_file}")
         return True
 
+    def install_clone_requirements(self):
+        """Create the clone's .venv and install its Python deps for tos.py.
+
+        Upstream expects tos.py to run inside the .venv its export script
+        creates: cmake/ninja/kconfiglib come from pyproject.toml as pip
+        packages, and tos.py's prepare step looks for cmake/ninja next to
+        sys.executable. Build that venv ourselves (it is gitignored
+        upstream, so it survives clone reuse and CI caching), point
+        self.clone_python at it, and fail loudly on any pip error - a
+        silently skipped install strands tos.py on a fresh CI runner.
+        """
+        venv_dir = os.path.join(self.clone_path, ".venv")
+        bin_dir = "Scripts" if os.name == "nt" else "bin"
+        self.clone_python = os.path.join(venv_dir, bin_dir, "python")
+
+        if not os.path.exists(self.clone_python):
+            result = subprocess.run(
+                [sys.executable, "-m", "venv", venv_dir],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                logging.error(f"venv creation failed: {result.stderr[-2000:]}")
+                return False
+            logging.info(f"Created venv at {venv_dir}")
+
+        targets = []
+        for req in [
+            os.path.join(self.clone_path, "requirements.txt"),
+            os.path.join(self.clone_path, "tools", "requirements.txt"),
+        ]:
+            if os.path.exists(req):
+                targets.append(["-r", req])
+        if os.path.exists(os.path.join(self.clone_path, "pyproject.toml")):
+            targets.append([self.clone_path])
+
+        if not targets:
+            logging.warning("No python requirements found in clone")
+            return True
+
+        for target in targets:
+            result = subprocess.run(
+                [self.clone_python, "-m", "pip", "install", "-q"] + target,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                logging.error(
+                    f"pip install {' '.join(target)} failed: {result.stderr[-2000:]}"
+                )
+                return False
+            logging.info(f"Installed python deps: {' '.join(target)}")
+        return True
+
+    def clone_env(self):
+        """Env for tos.py with the clone's .venv activated.
+
+        Pointing only the outer interpreter at the venv is not enough: the
+        platform build resolves python/cmake/ninja from PATH again (T5's
+        cmake runs confgen.py with the PATH python3), so a runner's bare
+        system python lacks the SDK's deps. Prepend the venv's bin dir the
+        way upstream's export script does.
+        """
+        env = os.environ.copy()
+        venv_dir = os.path.join(self.clone_path, ".venv")
+        bin_dir = os.path.join(venv_dir, "Scripts" if os.name == "nt" else "bin")
+        env["VIRTUAL_ENV"] = venv_dir
+        env["PATH"] = bin_dir + os.pathsep + env.get("PATH", "")
+        env.pop("PYTHONHOME", None)
+        return env
+
     def build_platform(self):
         tos = os.path.join(self.clone_path, "tos.py")
         if not os.path.exists(tos):
             logging.error(f"tos.py not found: {tos}")
             return False
 
-        requirements = os.path.join(self.clone_path, "requirements.txt")
-        if os.path.exists(requirements):
-            subprocess.run(
-                ["pip", "install", "-r", requirements],
-                capture_output=True,
-                text=True,
-            )
+        if not self.install_clone_requirements():
+            return False
 
         work_dir = self.build_app_path
 
         try:
             subprocess.run(
-                ["python", tos, "clean", "-f"],
+                [self.clone_python, tos, "clean", "-f"],
                 cwd=work_dir,
+                env=self.clone_env(),
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -91,8 +165,9 @@ class PackagePlatform:
         build_lines = []
         try:
             process = subprocess.Popen(
-                ["python", tos, "build"],
+                [self.clone_python, tos, "build"],
                 cwd=work_dir,
+                env=self.clone_env(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -113,6 +188,74 @@ class PackagePlatform:
             logging.error(f"Build error: {e}")
             return False
 
+        return self.verify_kconfig_applied()
+
+    def verify_kconfig_applied(self):
+        """Assert every symbol in app_default.config survived kconfig resolution.
+
+        set_platform_ini replaces the upstream app_default.config wholesale, and
+        kconfig silently ignores unknown symbols. Without this check, an upstream
+        rename drops a feature from the vendor package with no warning at all.
+        """
+        config_file = os.path.join(self.build_app_path, "app_default.config")
+        kconfig_h = os.path.join(self.build_app_path, ".build", "include", "tuya_kconfig.h")
+
+        if not os.path.exists(config_file):
+            logging.error(f"app_default.config not found: {config_file}")
+            return False
+        if not os.path.exists(kconfig_h):
+            # Some platforms fall back to a prebuilt sdkconfig.h; nothing to check.
+            logging.warning(f"tuya_kconfig.h not found, skipping symbol check: {kconfig_h}")
+            return True
+
+        defines = {}
+        with open(kconfig_h, "r") as f:
+            for line in f:
+                m = re.match(r"^#define\s+([A-Za-z_]\w*)\s*(.*)$", line.strip())
+                if m:
+                    defines[m.group(1)] = m.group(2).strip()
+
+        mismatches = []
+        with open(config_file, "r") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line:
+                    continue
+
+                unset = re.match(r"^#\s*CONFIG_(\w+)\s+is not set$", line)
+                if unset:
+                    name = unset.group(1)
+                    if name in defines:
+                        mismatches.append(f"{name}: expected unset, but defined as {defines[name]}")
+                    continue
+                if line.startswith("#"):
+                    continue
+
+                kv = re.match(r"^CONFIG_(\w+)=(.*)$", line)
+                if not kv:
+                    continue
+                name, value = kv.group(1), kv.group(2).strip()
+
+                if value == "n":
+                    if name in defines:
+                        mismatches.append(f"{name}: expected unset, but defined as {defines[name]}")
+                    continue
+
+                if name not in defines:
+                    mismatches.append(f"{name}: absent from tuya_kconfig.h (renamed upstream, or its parent menu is off)")
+                    continue
+
+                expected = "1" if value == "y" else value
+                if defines[name] != expected:
+                    mismatches.append(f"{name}: expected {expected}, got {defines[name]}")
+
+        if mismatches:
+            logging.error(f"{len(mismatches)} symbol(s) in app_default.config did not survive kconfig:")
+            for item in mismatches:
+                logging.error(f"  - {item}")
+            return False
+
+        logging.info("All app_default.config symbols verified against tuya_kconfig.h")
         return True
 
     def copy_libs(self, libs_list_file, output_path, prefix=None):
@@ -148,10 +291,17 @@ class PackagePlatform:
             shutil.copy2(src, dst)
         return True
 
-    def copy_include_dir_from_file(self, src_file, dst):
+    def copy_include_dir_from_file(self, src_file, dst, ignore_filenames=None):
         if not os.path.exists(src_file):
             logging.error(f"Src file not exists: {src_file}")
             return False
+
+        ignore_fn = None
+        if ignore_filenames:
+            ignore_set = set(ignore_filenames)
+
+            def ignore_fn(_dir, names):
+                return [n for n in names if n in ignore_set]
 
         chip = self.package_info.chip
         chip_case_map = {
@@ -179,7 +329,7 @@ class PackagePlatform:
 
             dst_dir = os.path.join(dst, original_include_dir)
             try:
-                shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
+                shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True, ignore=ignore_fn)
                 logging.debug(f"Copy {src_dir} to {dst_dir}")
             except Exception as e:
                 logging.error(f"Copy {src_dir} to {dst_dir} failed: {e}")
@@ -242,7 +392,12 @@ class PackagePlatform:
         include_tkl_file = os.path.join(staging, "includes", "include_tkl.txt")
         include_vendor_file = os.path.join(staging, "includes", "include_vendor.txt")
 
-        if not self.copy_include_dir_from_file(include_tuya_open_file, output_path):
+        # Ship only this repo's lang_config.h: upstream generates a localized one
+        # (zh-CN by default) into src/ai_components/assets/include, and two copies
+        # on the include path make the language depend on search order.
+        if not self.copy_include_dir_from_file(
+            include_tuya_open_file, output_path, ignore_filenames={"lang_config.h"}
+        ):
             return False
         logging.info("Copy open sdk include success")
 
@@ -281,8 +436,8 @@ class PackagePlatform:
             if os.path.exists(src):
                 self.copy_after_delete(src, os.path.join(flags_path, flag_file))
 
-        vendor_package = os.path.normpath(
-            os.path.join(self.clone_path, "..", self.package_info.package_name)
+        vendor_package = os.path.join(
+            self.package_info.output_path, self.package_info.package_name
         )
         self.handler.compress_package(output_path, vendor_package, "tar.bz2")
 

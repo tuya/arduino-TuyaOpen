@@ -7,3 +7,23 @@
 #######################################
 
 Button	KEYWORD1
+Printer	KEYWORD1
+PrinterClass	KEYWORD1
+PrinterEventCallback_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+open	KEYWORD2
+close	KEYWORD2
+isOpen	KEYWORD2
+setEventCallback	KEYWORD2
+beginJob	KEYWORD2
+endJob	KEYWORD2
+print	KEYWORD2
+write	KEYWORD2
+printBitmap	KEYWORD2
+feed	KEYWORD2
+getInfo	KEYWORD2
+dotsPerLine	KEYWORD2

@@ -16,6 +16,16 @@ extern "C" {
 #include "tuya_iot_dp.h"
 #include "tal_time_service.h"
 #include "tal_cli.h"
+
+// Newer vendor SDKs expose the license through tuya_authorize.h and no longer
+// implement tuya_iot_license_read(); older ones (t2 / t3 / ln882h) ship neither
+// that header nor the new symbol. Pick whichever this vendor package provides.
+#if defined(__has_include)
+#if __has_include("tuya_authorize.h")
+#include "tuya_authorize.h"
+#define TUYA_HAS_AUTHORIZE_READ 1
+#endif
+#endif
 #if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_esp32)
 #include "tuya_authorize.h"
 #endif
@@ -294,7 +304,14 @@ int TuyaIoTCloudClass::remove(void)
 
 int TuyaIoTCloudClass::readBoardLicense(tuya_iot_license_t *license)
 {
+#if defined(TUYA_HAS_AUTHORIZE_READ)
+    // tuya_iot_license_read() is still declared in tuya_iot.h but no longer
+    // implemented by any shipped library; tuya_authorize_read() is the current
+    // entry point and takes the same tuya_iot_license_t out-parameter.
+    return tuya_authorize_read(license);
+#else
     return tuya_iot_license_read(license);
+#endif
 }
 
 bool TuyaIoTCloudClass::networkCheck(void)

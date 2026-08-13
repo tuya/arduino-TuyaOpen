@@ -1,6 +1,10 @@
 name=Tuya
 version=1.2.1
 
+# Language menu defaults (only T5-family boards override these via menu.Language)
+build.lang_flags=
+build.lang_lib=
+
 #
 ## Arduino build
 #
@@ -10,16 +14,16 @@ recipe.hooks.prebuild.1.pattern.windows="{runtime.tools.env-python.path}/python.
 
 ## Preprocess sketches
 preproc.macros.flags=-w -x c++ -E -CC
-recipe.preproc.macros="{compiler.cmd.cpp}" {compiler.flags.cpp} {preproc.macros.flags} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} "{source_file}" -o "{preprocessed_file_path}"
+recipe.preproc.macros="{compiler.cmd.cpp}" {compiler.flags.cpp} {preproc.macros.flags} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} "{source_file}" -o "{preprocessed_file_path}"
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.cmd.c}" {compiler.flags.c} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.c.o.pattern="{compiler.cmd.c}" {compiler.flags.c} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## Compile cpp files
-recipe.cpp.o.pattern="{compiler.cmd.cpp}" {compiler.flags.cpp} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.cpp.o.pattern="{compiler.cmd.cpp}" {compiler.flags.cpp} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## Compile S files
-recipe.S.o.pattern="{compiler.cmd.S}" {compiler.flags.S} {appBuild.flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
+recipe.S.o.pattern="{compiler.cmd.S}" {compiler.flags.S} {appBuild.flags} {build.lang_flags} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_CHIP_{build.chip} -DBOARD_NAME="{build.board}" {compiler.includes} {includes} {source_file} -o {object_file}
 
 ## ar
 archive_file_path={build.path}/{archive_file}

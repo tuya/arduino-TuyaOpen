@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import sys
 import shutil
 import logging
@@ -11,7 +12,14 @@ import hashlib
 
 
 class PackageHandler:
+    @staticmethod
+    def _is_commit_sha(ref):
+        """A 7-40 char hex string is treated as a commit, not a branch name."""
+        return re.fullmatch(r"[0-9a-fA-F]{7,40}", ref) is not None
+
     def git_clone(self, git_url, git_branch, clone_path, force_update=True):
+        pinned = self._is_commit_sha(git_branch)
+
         if os.path.exists(clone_path):
             if force_update:
                 logging.info(f"{clone_path} exists, updating to latest...")
@@ -20,15 +28,29 @@ class PackageHandler:
                         ["git", "-C", clone_path, "fetch", "origin"],
                         check=True, capture_output=True, text=True
                     )
+                    # --force: a previous build leaves tracked files modified, and a
+                    # plain checkout aborts on those, falling through to the fresh
+                    # clone below - which deletes gitignored downloads worth GBs
+                    # (platform/ carries the ~700M toolchain).
+                    checkout_args = ["--force"] + (["--detach"] if pinned else []) + [git_branch]
                     subprocess.run(
-                        ["git", "-C", clone_path, "checkout", git_branch],
+                        ["git", "-C", clone_path, "checkout"] + checkout_args,
                         check=True, capture_output=True, text=True
                     )
+                    # origin/<sha> is not a ref, so a pinned commit resets onto itself
                     subprocess.run(
-                        ["git", "-C", clone_path, "reset", "--hard", f"origin/{git_branch}"],
+                        ["git", "-C", clone_path, "reset", "--hard",
+                         git_branch if pinned else f"origin/{git_branch}"],
                         check=True, capture_output=True, text=True
                     )
-                    logging.info(f"Updated {clone_path} to latest {git_branch}")
+                    # Drop untracked leftovers such as the src/ai_components headers an
+                    # older packager forged. No -x, so gitignored downloads (platform/,
+                    # .build/) are preserved.
+                    subprocess.run(
+                        ["git", "-C", clone_path, "clean", "-fd"],
+                        check=True, capture_output=True, text=True
+                    )
+                    logging.info(f"Updated {clone_path} to {'commit' if pinned else 'latest'} {git_branch}")
 
                     submodule_path = os.path.join(clone_path, ".gitmodules")
                     if os.path.exists(submodule_path):
@@ -46,11 +68,22 @@ class PackageHandler:
                 return True
 
         try:
-            logging.info(f"Cloning {git_url} branch {git_branch} to {clone_path}")
-            subprocess.run(
-                ["git", "clone", "--branch", git_branch, git_url, clone_path],
-                check=True, capture_output=True, text=True
-            )
+            logging.info(f"Cloning {git_url} {'commit' if pinned else 'branch'} {git_branch} to {clone_path}")
+            if pinned:
+                # git clone --branch does not accept a raw sha
+                subprocess.run(
+                    ["git", "clone", git_url, clone_path],
+                    check=True, capture_output=True, text=True
+                )
+                subprocess.run(
+                    ["git", "-C", clone_path, "checkout", "--detach", git_branch],
+                    check=True, capture_output=True, text=True
+                )
+            else:
+                subprocess.run(
+                    ["git", "clone", "--branch", git_branch, git_url, clone_path],
+                    check=True, capture_output=True, text=True
+                )
         except subprocess.CalledProcessError as e:
             logging.error(f"Clone failed: {e.stderr}")
             return False

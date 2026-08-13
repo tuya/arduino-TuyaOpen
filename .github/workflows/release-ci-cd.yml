@@ -165,10 +165,10 @@ jobs:
       - name: Cache tuyaopen clone
         uses: actions/cache@v5
         with:
-          path: output/${{ matrix.toolName }}
-          key: tuyaopen-${{ matrix.platform }}-${{ matrix.sourceBranch }}-${{ github.run_id }}
+          path: tools/ci/output/cache/${{ matrix.toolName }}
+          key: tuyaopen-v2-${{ matrix.platform }}-${{ matrix.sourceBranch }}-${{ github.run_id }}
           restore-keys: |
-            tuyaopen-${{ matrix.platform }}-${{ matrix.sourceBranch }}-
+            tuyaopen-v2-${{ matrix.platform }}-${{ matrix.sourceBranch }}-
 
       - name: Package vendor SDK - ${{ matrix.platform }}
         run: |

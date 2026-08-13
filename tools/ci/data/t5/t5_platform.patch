@@ -1,8 +1,8 @@
-diff --git a/apps/tuya.ai/ai_components/ai_audio/src/ai_audio_player.c b/apps/tuya.ai/ai_components/ai_audio/src/ai_audio_player.c
-index 46afb49d..e8276fd9 100755
---- a/apps/tuya.ai/ai_components/ai_audio/src/ai_audio_player.c
-+++ b/apps/tuya.ai/ai_components/ai_audio/src/ai_audio_player.c
-@@ -382,12 +382,18 @@ OPERATE_RET ai_audio_play_tts_stream(AI_AUDIO_PLAYER_TTS_STATE_E state, AI_AUDIO
+diff --git a/src/ai_components/ai_audio/src/ai_audio_player.c b/src/ai_components/ai_audio/src/ai_audio_player.c
+index 01e6a0e2..ff9e12ef 100755
+--- a/src/ai_components/ai_audio/src/ai_audio_player.c
++++ b/src/ai_components/ai_audio/src/ai_audio_player.c
+@@ -387,12 +387,17 @@ OPERATE_RET ai_audio_play_tts_stream(AI_AUDIO_PLAYER_TTS_STATE_E state, AI_AUDIO
          TUYA_CALL_ERR_LOG(tuya_ai_player_start(__s_tone_player, AI_PLAYER_SRC_MEM, NULL, codec));
          ai_user_event_notify(AI_USER_EVT_TTS_START, NULL);
          break;
@@ -12,21 +12,21 @@ index 46afb49d..e8276fd9 100755
          if (data && len > 0 && __s_tts_play_flag) {
              TUYA_CALL_ERR_LOG(tuya_ai_player_feed(__s_tone_player, (uint8_t *)data, len));
          }
-         ai_user_event_notify(AI_USER_EVT_TTS_DATA, NULL);
-+            AI_NOTIFY_TEXT_T tts_data;
-+            tts_data.data = data;
-+            tts_data.datalen = len;
-+            tts_data.timeindex = 0;
-+            ai_user_event_notify(AI_USER_EVT_TTS_DATA, &tts_data);
-+        }
+-        ai_user_event_notify(AI_USER_EVT_TTS_DATA, NULL);
++        AI_NOTIFY_TEXT_T tts_data;
++        tts_data.data = data;
++        tts_data.datalen = len;
++        tts_data.timeindex = 0;
++        ai_user_event_notify(AI_USER_EVT_TTS_DATA, &tts_data);
++    }
          break;
      case AI_AUDIO_PLAYER_TTS_STOP:
          PR_DEBUG("audio player -> tts stream stop");
-diff --git a/apps/tuya.ai/ai_components/ai_skills/src/ai_skill.c b/apps/tuya.ai/ai_components/ai_skills/src/ai_skill.c
-index b53c407c..4a54c942 100755
---- a/apps/tuya.ai/ai_components/ai_skills/src/ai_skill.c
-+++ b/apps/tuya.ai/ai_components/ai_skills/src/ai_skill.c
-@@ -83,9 +83,8 @@ static OPERATE_RET __ai_skills_process(cJSON *root, bool eof)
+diff --git a/src/ai_components/ai_skills/src/ai_skill.c b/src/ai_components/ai_skills/src/ai_skill.c
+index c11b4a5f..c6043671 100755
+--- a/src/ai_components/ai_skills/src/ai_skill.c
++++ b/src/ai_components/ai_skills/src/ai_skill.c
+@@ -96,9 +96,8 @@ static OPERATE_RET __ai_skills_process(cJSON *root, bool eof)
      else {
          PR_NOTICE("skill %s not handled", code);
          /* PR_NOTICE("skill content %s ", cJSON_PrintUnformatted(root)); */

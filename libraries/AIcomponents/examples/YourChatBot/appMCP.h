@@ -1,5 +1,5 @@
 /**
- * @file AppMCP.h
+ * @file appMCP.h
  * @brief MCP (Model Context Protocol) interface for AI ChatBot
  *
  * @copyright Copyright (c) 2021-2025 Tuya Inc. All Rights Reserved.

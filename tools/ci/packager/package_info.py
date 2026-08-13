@@ -5,7 +5,9 @@ import hashlib
 
 
 class PackageInfo:
-    def __init__(self, name, version, chip, source_repo, source_branch, output_path, compress_type="tar.bz2", build_app="apps/tuya_cloud/switch_demo"):
+    def __init__(self, name, version, chip, source_repo, source_branch, output_path,
+                 compress_type="tar.bz2", build_app="apps/tuya_cloud/switch_demo",
+                 cache_path=None):
         self.name = name
         self.version = version
         self.source_repo = source_repo
@@ -14,6 +16,7 @@ class PackageInfo:
         self.compress_type = compress_type
         self.chip = chip
         self.build_app = build_app
+        self.cache_path = cache_path
 
         self.package_name = f"{self.name}-{self.version}.{self.compress_type}"
         self.package_size = 0

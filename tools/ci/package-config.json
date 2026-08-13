@@ -35,7 +35,7 @@
       "toolName": "vendor-T5",
       "boardName": "t5",
       "chip": "T5AI",
-      "version": "0.0.9",
+      "version": "0.0.10",
       "sourceRepo": "https://github.com/tuya/TuyaOpen.git",
       "sourceBranch": "master",
       "buildApp": "apps/tuya.ai/your_chat_bot",

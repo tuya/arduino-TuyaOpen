@@ -1,4 +1,5 @@
 menu.UploadSpeed=Upload Speed
+menu.Language=Language
 
 # --------------------------------------------------
 #                         T2                        
@@ -124,6 +125,13 @@ t5.menu.UploadSpeed.1500000.upload.speed=1500000
 t5.menu.UploadSpeed.2000000=2000000
 t5.menu.UploadSpeed.2000000.upload.speed=2000000
 
+t5.menu.Language.en_us=English
+t5.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
+t5.menu.Language.en_us.build.lang_lib=-lailang_en
+t5.menu.Language.zh_cn=Chinese
+t5.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
+t5.menu.Language.zh_cn.build.lang_lib=-lailang_zh
+
 t5.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
 t5.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
 t5.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
@@ -145,7 +153,7 @@ t5.compiler.includes.vendor=-iprefix {runtime.tools.vendor-T5.path}/ @{runtime.t
 t5.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
 
 t5.compiler.flags.ld=@{runtime.tools.vendor-T5.path}/flags/ld_flags.txt
-t5.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
+t5.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs {build.lang_lib} @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
 t5.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-T5.path}/packager-tools/T5.ld -o {build.path}/{build.project_name}.elf
 
 t5.upload.tool=tyutool
@@ -175,6 +183,13 @@ TUYA_T5AI_BOARD.menu.UploadSpeed.1500000.upload.speed=1500000
 TUYA_T5AI_BOARD.menu.UploadSpeed.2000000=2000000
 TUYA_T5AI_BOARD.menu.UploadSpeed.2000000.upload.speed=2000000
 
+TUYA_T5AI_BOARD.menu.Language.en_us=English
+TUYA_T5AI_BOARD.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
+TUYA_T5AI_BOARD.menu.Language.en_us.build.lang_lib=-lailang_en
+TUYA_T5AI_BOARD.menu.Language.zh_cn=Chinese
+TUYA_T5AI_BOARD.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
+TUYA_T5AI_BOARD.menu.Language.zh_cn.build.lang_lib=-lailang_zh
+
 TUYA_T5AI_BOARD.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
 TUYA_T5AI_BOARD.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
 TUYA_T5AI_BOARD.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
@@ -196,7 +211,7 @@ TUYA_T5AI_BOARD.compiler.includes.vendor=-iprefix {runtime.tools.vendor-T5.path}
 TUYA_T5AI_BOARD.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
 
 TUYA_T5AI_BOARD.compiler.flags.ld=@{runtime.tools.vendor-T5.path}/flags/ld_flags.txt
-TUYA_T5AI_BOARD.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
+TUYA_T5AI_BOARD.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs {build.lang_lib} @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
 TUYA_T5AI_BOARD.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-T5.path}/packager-tools/T5.ld -o {build.path}/{build.project_name}.elf
 
 TUYA_T5AI_BOARD.upload.tool=tyutool
@@ -226,6 +241,13 @@ TUYA_T5AI_CORE.menu.UploadSpeed.1500000.upload.speed=1500000
 TUYA_T5AI_CORE.menu.UploadSpeed.2000000=2000000
 TUYA_T5AI_CORE.menu.UploadSpeed.2000000.upload.speed=2000000
 
+TUYA_T5AI_CORE.menu.Language.en_us=English
+TUYA_T5AI_CORE.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
+TUYA_T5AI_CORE.menu.Language.en_us.build.lang_lib=-lailang_en
+TUYA_T5AI_CORE.menu.Language.zh_cn=Chinese
+TUYA_T5AI_CORE.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
+TUYA_T5AI_CORE.menu.Language.zh_cn.build.lang_lib=-lailang_zh
+
 TUYA_T5AI_CORE.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
 TUYA_T5AI_CORE.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
 TUYA_T5AI_CORE.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
@@ -247,7 +269,7 @@ TUYA_T5AI_CORE.compiler.includes.vendor=-iprefix {runtime.tools.vendor-T5.path}/
 TUYA_T5AI_CORE.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
 
 TUYA_T5AI_CORE.compiler.flags.ld=@{runtime.tools.vendor-T5.path}/flags/ld_flags.txt
-TUYA_T5AI_CORE.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
+TUYA_T5AI_CORE.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs {build.lang_lib} @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
 TUYA_T5AI_CORE.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-T5.path}/packager-tools/T5.ld -o {build.path}/{build.project_name}.elf
 
 TUYA_T5AI_CORE.upload.tool=tyutool
@@ -277,6 +299,13 @@ XH_WB5E.menu.UploadSpeed.1500000.upload.speed=1500000
 XH_WB5E.menu.UploadSpeed.2000000=2000000
 XH_WB5E.menu.UploadSpeed.2000000.upload.speed=2000000
 
+XH_WB5E.menu.Language.en_us=English
+XH_WB5E.menu.Language.en_us.build.lang_flags=-DLANG_CONF=1
+XH_WB5E.menu.Language.en_us.build.lang_lib=-lailang_en
+XH_WB5E.menu.Language.zh_cn=Chinese
+XH_WB5E.menu.Language.zh_cn.build.lang_flags=-DLANG_CONF=0
+XH_WB5E.menu.Language.zh_cn.build.lang_lib=-lailang_zh
+
 XH_WB5E.compiler.path={runtime.tools.gcc-arm-none-eabi.path}
 XH_WB5E.compiler.cmd.S={compiler.path}/bin/arm-none-eabi-gcc
 XH_WB5E.compiler.cmd.c={compiler.path}/bin/arm-none-eabi-gcc
@@ -298,7 +327,7 @@ XH_WB5E.compiler.includes.vendor=-iprefix {runtime.tools.vendor-T5.path}/ @{runt
 XH_WB5E.compiler.includes={compiler.includes.tuya_open} {compiler.includes.tkl} {compiler.includes.vendor}
 
 XH_WB5E.compiler.flags.ld=@{runtime.tools.vendor-T5.path}/flags/ld_flags.txt
-XH_WB5E.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
+XH_WB5E.compiler.flags.libs=-L{runtime.tools.vendor-T5.path}/libs {build.lang_lib} @{runtime.tools.vendor-T5.path}/flags/libs_flags.txt
 XH_WB5E.compiler.flags.ld_scripts=-Wl,--cref -Wl,-Map={build.path}/{build.project_name}.map -T{runtime.tools.vendor-T5.path}/packager-tools/T5.ld -o {build.path}/{build.project_name}.elf
 
 XH_WB5E.upload.tool=tyutool

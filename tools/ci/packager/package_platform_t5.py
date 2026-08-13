@@ -7,11 +7,184 @@ import subprocess
 import shutil
 import json
 import hashlib
+import tempfile
 
 from .package_platform import PackagePlatform
 
 
 class PackagePlatformT5(PackagePlatform):
+    def _set_language(self, chinese):
+        """Flip the AI language choice in the working app_default.config.
+
+        Kconfig models the language as an exclusive choice, so exactly one
+        of the two symbols must be =y and the other 'is not set'.
+        """
+        config_file = os.path.join(self.build_app_path, "app_default.config")
+        with open(config_file, "r") as f:
+            text = f.read()
+
+        en_on = "CONFIG_ENABLE_AI_LANGUAGE_ENGLISH=y"
+        en_off = "# CONFIG_ENABLE_AI_LANGUAGE_ENGLISH is not set"
+        zh_on = "CONFIG_ENABLE_AI_LANGUAGE_CHINESE=y"
+        zh_off = "# CONFIG_ENABLE_AI_LANGUAGE_CHINESE is not set"
+
+        if en_on not in text or zh_off not in text:
+            logging.error("Language symbols not found in app_default.config baseline")
+            return False
+        if chinese:
+            text = text.replace(en_on, en_off).replace(zh_off, zh_on)
+        with open(config_file, "w") as f:
+            f.write(text)
+        logging.info(f"Language set to {'Chinese' if chinese else 'English'}")
+        return True
+
+    def _toolchain_tool(self, name):
+        """Locate an arm-none-eabi binutil next to the compiler used by the build."""
+        compile_commands_file = os.path.join(
+            self.vendor_path, "t5_os", "build", "bk7258", "tuya_app", "bk7258_ap",
+            "compile_commands.json",
+        )
+        if not os.path.exists(compile_commands_file):
+            logging.error(f"compile_commands.json not found: {compile_commands_file}")
+            return None
+        with open(compile_commands_file, "r") as f:
+            compiler = json.load(f)[0]["command"].split(" ")[0]
+        tool = os.path.join(os.path.dirname(compiler), f"arm-none-eabi-{name}")
+        if not os.path.exists(tool):
+            logging.error(f"Toolchain tool not found: {tool}")
+            return None
+        return tool
+
+    def _ai_member_names(self):
+        """Archive members owned by src/ai_components: <basename>.c -> <basename>.c.o."""
+        members = set()
+        root = os.path.join(self.clone_path, "src", "ai_components")
+        for _dirpath, _dirs, files in os.walk(root):
+            for name in files:
+                if name.endswith(".c"):
+                    members.add(name + ".o")
+        return members
+
+    def _find_built_libtuyaos(self):
+        build_ninja = os.path.join(
+            self.vendor_path, "t5_os", "build", "bk7258", "tuya_app", "bk7258_ap",
+            "build.ninja",
+        )
+        if not os.path.exists(build_ninja):
+            logging.error(f"build.ninja not found: {build_ninja}")
+            return None
+        base = os.path.dirname(build_ninja)
+        with open(build_ninja, "r") as f:
+            for line in f:
+                if "LINK_LIBRARIES" not in line:
+                    continue
+                for token in line.split():
+                    if token.endswith("libtuyaos.a"):
+                        if not os.path.isabs(token):
+                            token = os.path.normpath(os.path.join(base, token))
+                        return token
+        logging.error("libtuyaos.a not found in AP build.ninja LINK_LIBRARIES")
+        return None
+
+    def _extract_lang_archive(self, ar, src_archive, member_names, out_archive):
+        """Pull the ai_components members out of src_archive into out_archive.
+
+        Returns the extracted member list, or None on failure.
+        """
+        result = subprocess.run([ar, "t", src_archive], capture_output=True, text=True)
+        if result.returncode != 0:
+            logging.error(f"ar t failed on {src_archive}: {result.stderr}")
+            return None
+        members = [m for m in result.stdout.split() if m in member_names]
+        if not members:
+            logging.error(f"No ai_components members found in {src_archive}")
+            return None
+
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                subprocess.run([ar, "x", os.path.abspath(src_archive)] + members,
+                               cwd=tmp, check=True)
+                if os.path.exists(out_archive):
+                    os.remove(out_archive)
+                subprocess.run([ar, "rcs", os.path.abspath(out_archive)] + members,
+                               cwd=tmp, check=True)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"ar extraction into {out_archive} failed: {e}")
+            return None
+        logging.info(f"Packed {len(members)} members into {out_archive}")
+        return members
+
+    def _defined_symbols(self, nm, archive):
+        result = subprocess.run([nm, "-g", "--defined-only", archive],
+                                capture_output=True, text=True)
+        return result.stdout
+
+    def verify_lang_split(self, ar, nm, output_lib_path, member_names):
+        """Fail packaging unless the language split is complete and non-empty."""
+        ok = True
+
+        en_archive = os.path.join(output_lib_path, "libailang_en.a")
+        if "media_src_prologue_en" not in self._defined_symbols(nm, en_archive):
+            logging.error("libailang_en.a does not define media_src_prologue_en")
+            ok = False
+
+        zh_archive = os.path.join(output_lib_path, "libailang_zh.a")
+        if "media_src_prologue_zh" not in self._defined_symbols(nm, zh_archive):
+            logging.error(
+                "libailang_zh.a does not define media_src_prologue_zh "
+                "(Chinese voice data compiled out?)"
+            )
+            ok = False
+
+        base = os.path.join(output_lib_path, "libtuyaos.a")
+        result = subprocess.run([ar, "t", base], capture_output=True, text=True)
+        if result.returncode != 0:
+            logging.error(f"ar t failed on {base}: {result.stderr}")
+            ok = False
+        else:
+            leftovers = [m for m in result.stdout.split() if m in member_names]
+            if leftovers:
+                logging.error(f"libtuyaos.a still contains ai members: {leftovers}")
+                ok = False
+
+        if ok:
+            logging.info("Language split verified: en/zh archives populated, base clean")
+        return ok
+
+    def _header_string_keys(self, path):
+        keys = set()
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                m = re.match(r'\s*#define\s+([A-Za-z_0-9]+)\s+"', line)
+                if m:
+                    keys.add(m.group(1))
+        return keys
+
+    def verify_repo_lang_header(self, generated_headers):
+        """The repo's bilingual lang_config.h must cover every upstream key.
+
+        Guards against upstream adding strings (branch is unpinned master):
+        a missing macro would break Arduino-side compilation of vendor headers.
+        """
+        repo_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        )
+        repo_header = os.path.join(
+            repo_root, "libraries", "AIcomponents", "src", "lang_config.h"
+        )
+        repo_keys = self._header_string_keys(repo_header)
+        ok = True
+        for generated in generated_headers:
+            missing = self._header_string_keys(generated) - repo_keys
+            if missing:
+                logging.error(
+                    f"lang_config.h drift, missing keys {sorted(missing)} "
+                    f"(vs {generated}); regenerate with "
+                    "tools/gen_bilingual_lang_header.py"
+                )
+                ok = False
+        return ok
+
     def copy_from_string(self, input_str, output_lib_path, base_path=None):
         input_str = input_str.strip()
         tmp_list = [x for x in input_str.split(" ") if x]
@@ -102,100 +275,6 @@ class PackagePlatformT5(PackagePlatform):
         vendor_include_list = [x for x in include_list if x.startswith("platform/T5AI/")]
         with open(os.path.join(output_path, "include_vendor.txt"), "w") as f:
             f.write("\n".join(vendor_include_list) + "\n")
-        return True
-
-    def copy_ai_components_libs(self, output_lib_path):
-        build_app_rel = self.package_info.build_app
-        ai_components_rel = os.path.join(os.path.dirname(build_app_rel), "ai_components")
-        ai_components_build_path = os.path.join(
-            self.build_app_path,
-            ".build", "CMakeFiles", "tuyaapp.dir", ai_components_rel,
-        )
-        if not os.path.exists(ai_components_build_path):
-            logging.warning(f"ai_components build path not exists: {ai_components_build_path}")
-            return True
-
-        libtuyaos_path = os.path.join(output_lib_path, "libtuyaos.a")
-        if not os.path.exists(libtuyaos_path):
-            logging.error(f"libtuyaos.a not found at {libtuyaos_path}")
-            return False
-
-        ai_obj_files = []
-        for root, _, files in os.walk(ai_components_build_path):
-            for f in files:
-                if f.endswith(".o"):
-                    ai_obj_files.append(os.path.join(root, f))
-
-        if not ai_obj_files:
-            logging.warning(f"No .o files found in {ai_components_build_path}")
-            return True
-
-        logging.info(f"Found {len(ai_obj_files)} .o files in ai_components")
-
-        for obj_file in ai_obj_files:
-            result = subprocess.run(["ar", "rcs", libtuyaos_path, obj_file], capture_output=True, text=True)
-            if result.returncode != 0:
-                logging.error(f"Failed to add {obj_file} to libtuyaos.a: {result.stderr}")
-
-        logging.info(f"Merged {len(ai_obj_files)} .o files from ai_components into libtuyaos.a")
-        return True
-
-    def copy_ai_components_headers(self, output_tmp_path):
-        ai_components_src = os.path.join(os.path.dirname(self.build_app_path), "ai_components")
-        if not os.path.exists(ai_components_src):
-            logging.warning(f"ai_components source path not exists: {ai_components_src}")
-            return []
-
-        exclude_headers = ["lang_config.h"]
-        include_paths = []
-
-        clone_src_path = os.path.join(self.clone_path, "src")
-        if not os.path.exists(clone_src_path):
-            logging.warning(f"src path not exists: {clone_src_path}")
-            return []
-
-        clone_ai_dir = os.path.join(clone_src_path, "ai_components")
-        if os.path.exists(clone_ai_dir):
-            shutil.rmtree(clone_ai_dir)
-
-        for root, _, files in os.walk(ai_components_src):
-            header_files = [f for f in files if f.endswith(".h") and f not in exclude_headers]
-            if header_files:
-                rel_path = os.path.relpath(root, ai_components_src)
-                clone_dst_dir = os.path.join(clone_src_path, "ai_components", rel_path)
-                os.makedirs(clone_dst_dir, exist_ok=True)
-
-                for f in header_files:
-                    shutil.copy2(os.path.join(root, f), os.path.join(clone_dst_dir, f))
-
-                include_rel_path = os.path.join("src", "ai_components", rel_path).replace("\\", "/")
-                if rel_path == ".":
-                    include_rel_path = "src/ai_components"
-                if include_rel_path not in include_paths:
-                    include_paths.append(include_rel_path)
-
-        logging.info(f"Found {len(include_paths)} ai_components include paths")
-        return include_paths
-
-    def update_include_tuya_open_with_ai_components(self, include_paths):
-        include_file = os.path.join(self.staging_path, "includes", "include_tuya_open.txt")
-        if not os.path.exists(include_file):
-            logging.error(f"include_tuya_open.txt not exists: {include_file}")
-            return False
-
-        with open(include_file, "r") as f:
-            existing_lines = f.read().splitlines()
-
-        existing_set = set(line.strip() for line in existing_lines if line.strip())
-        new_paths = [p for p in include_paths if p not in existing_set]
-
-        if new_paths:
-            existing_lines.extend(new_paths)
-            with open(include_file, "w") as f:
-                for line in existing_lines:
-                    if line.strip():
-                        f.write(f"{line}\n")
-            logging.info(f"Updated include_tuya_open.txt with {len(new_paths)} new ai_components paths")
         return True
 
     def copy_tuya_kconfig(self, output_path):
@@ -298,13 +377,8 @@ class PackagePlatformT5(PackagePlatform):
             logging.error(f"tos.py not found: {tos}")
             return False
 
-        requirements = os.path.join(self.clone_path, "requirements.txt")
-        if os.path.exists(requirements):
-            subprocess.run(
-                ["pip", "install", "-r", requirements],
-                capture_output=True,
-                text=True,
-            )
+        if not self.install_clone_requirements():
+            return False
 
         work_dir = self.build_app_path
         if not os.path.exists(work_dir):
@@ -313,8 +387,9 @@ class PackagePlatformT5(PackagePlatform):
 
         try:
             subprocess.run(
-                ["python", tos, "clean", "-f"],
-                cwd=work_dir, capture_output=True, text=True, timeout=60,
+                [self.clone_python, tos, "clean", "-f"],
+                cwd=work_dir, env=self.clone_env(),
+                capture_output=True, text=True, timeout=60,
             )
             logging.info("Build cache cleaned")
         except Exception as e:
@@ -323,8 +398,9 @@ class PackagePlatformT5(PackagePlatform):
         build_lines = []
         try:
             process = subprocess.Popen(
-                ["python", tos, "build"],
+                [self.clone_python, tos, "build"],
                 cwd=work_dir,
+                env=self.clone_env(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -344,7 +420,7 @@ class PackagePlatformT5(PackagePlatform):
             logging.error(f"Build error: {e}")
             return False
 
-        return True
+        return self.verify_kconfig_applied()
 
     def apply_platform_patch(self):
         patch_file = os.path.join(self.data_path, "t5_platform.patch")
@@ -394,11 +470,45 @@ class PackagePlatformT5(PackagePlatform):
         if not self.apply_platform_patch():
             return False
         ini_file = os.path.join(self.config_path, "app_default.config")
+
+        # Pass 1: Chinese build, only to harvest the language archive and the
+        # generated zh lang_config.h. Everything else ships from pass 2.
         if not self.set_platform_ini(ini_file):
             return False
-
+        if not self._set_language(chinese=True):
+            return False
         if not self.build_platform_t5():
             return False
+
+        ar = self._toolchain_tool("ar")
+        nm = self._toolchain_tool("nm")
+        if not ar or not nm:
+            return False
+
+        lang_stash = os.path.join(self.package_info.output_path, "lang_stash")
+        os.makedirs(lang_stash, exist_ok=True)
+        ai_members = self._ai_member_names()
+
+        zh_libtuyaos = self._find_built_libtuyaos()
+        if not zh_libtuyaos:
+            return False
+        zh_archive = os.path.join(lang_stash, "libailang_zh.a")
+        if not self._extract_lang_archive(ar, zh_libtuyaos, ai_members, zh_archive):
+            return False
+        upstream_header = os.path.join(
+            self.clone_path, "src", "ai_components", "assets", "include", "lang_config.h"
+        )
+        zh_header = os.path.join(lang_stash, "lang_config_zh.h")
+        shutil.copy2(upstream_header, zh_header)
+
+        # Pass 2: English build; libs, flags, includes and boot binaries all
+        # ship from this build, exactly as before.
+        if not self.set_platform_ini(ini_file):
+            return False
+        if not self.build_platform_t5():
+            return False
+        en_header = os.path.join(lang_stash, "lang_config_en.h")
+        shutil.copy2(upstream_header, en_header)
 
         output_tmp_path = os.path.join(self.package_info.output_path, "tmp", self.package_info.name)
         if os.path.exists(output_tmp_path):
@@ -478,11 +588,28 @@ class PackagePlatformT5(PackagePlatform):
             logging.error(f"tuya_kconfig.h not found at {tuya_kconfig_src}")
             return False
 
-        logging.info("Processing ai_components...")
-        self.copy_ai_components_libs(output_lib_path)
-        ai_include_paths = self.copy_ai_components_headers(output_tmp_path)
-        if ai_include_paths:
-            self.update_include_tuya_open_with_ai_components(ai_include_paths)
+        # Split language objects out of the shipped libtuyaos.a and drop in
+        # both language archives. Must run after copy_assets (it recreates libs/).
+        output_lib_path = os.path.join(output_tmp_path, "libs")
+        shipped_libtuyaos = os.path.join(output_lib_path, "libtuyaos.a")
+        en_members = self._extract_lang_archive(
+            ar, shipped_libtuyaos, ai_members,
+            os.path.join(output_lib_path, "libailang_en.a"),
+        )
+        if not en_members:
+            return False
+        try:
+            subprocess.run([ar, "d", shipped_libtuyaos] + en_members, check=True)
+            subprocess.run([ar, "s", shipped_libtuyaos], check=True)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Stripping ai members from {shipped_libtuyaos} failed: {e}")
+            return False
+        shutil.copy2(zh_archive, os.path.join(output_lib_path, "libailang_zh.a"))
+
+        if not self.verify_lang_split(ar, nm, output_lib_path, ai_members):
+            return False
+        if not self.verify_repo_lang_header([en_header, zh_header]):
+            return False
 
         if not self.copy_tuya_open(output_tmp_path):
             return False

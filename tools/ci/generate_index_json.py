@@ -29,7 +29,9 @@ HOSTS = [
 ]
 
 
-def make_download_url(owner, repo, tag, filename):
+def make_download_url(owner, repo, tag, filename, base_url=None):
+    if base_url:
+        return f"{base_url.rstrip('/')}/{filename}"
     return f"https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}"
 
 
@@ -57,7 +59,7 @@ def generate_vendor_tool_entry(tool_name, version, download_url, archive_filenam
     }
 
 
-def generate_index(base_index, manifest, config, version, owner, repo):
+def generate_index(base_index, manifest, config, version, owner, repo, base_url=None):
     package_data = copy.deepcopy(base_index)
     platforms = package_data["packages"][0]["platforms"]
     tools = package_data["packages"][0]["tools"]
@@ -79,13 +81,13 @@ def generate_index(base_index, manifest, config, version, owner, repo):
     arduino_artifact = find_artifact(manifest, "arduino_tuya_open-")
     if arduino_artifact:
         arduino_filename = arduino_artifact["name"]
-        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename)
+        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename, base_url)
         new_platform["archiveFileName"] = arduino_filename
         new_platform["size"] = arduino_artifact["size"]
         new_platform["checksum"] = arduino_artifact["checksum"]
     else:
         arduino_filename = f"arduino_tuya_open-{version}.zip"
-        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename)
+        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename, base_url)
         new_platform["archiveFileName"] = arduino_filename
         logging.warning("Arduino artifact not in manifest, URL updated but size/checksum unchanged")
 
@@ -158,7 +160,7 @@ def generate_index(base_index, manifest, config, version, owner, repo):
 
         size = vendor_artifact["size"]
         checksum = vendor_artifact["checksum"]
-        download_url = make_download_url(owner, repo, version, archive_filename)
+        download_url = make_download_url(owner, repo, version, archive_filename, base_url)
 
         if tool_key in existing_tools:
             existing = existing_tools[tool_key]
@@ -201,6 +203,7 @@ def main():
     parser.add_argument("--config", required=True, help="Path to package-config.json")
     parser.add_argument("--github-owner", required=True, help="GitHub owner")
     parser.add_argument("--github-repo", required=True, help="GitHub repo name")
+    parser.add_argument("--base-url", default=None, help="Override download host, e.g. http://127.0.0.1:8765 (default: GitHub release URL)")
     parser.add_argument("--output", required=True, help="Output JSON path")
     parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args()
@@ -221,7 +224,7 @@ def main():
 
     result = generate_index(
         base_index, manifest, config, args.version,
-        args.github_owner, args.github_repo,
+        args.github_owner, args.github_repo, args.base_url,
     )
 
     if result is None:

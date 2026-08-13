@@ -60,7 +60,7 @@ def build_arduino(version, checkout_path, output_path):
     }
 
 
-def build_vendor(platform_key, platform_config, output_path):
+def build_vendor(platform_key, platform_config, output_path, cache_path):
     logging.info(f"=== Packaging vendor SDK: {platform_key} ===")
 
     data_path = os.path.join(SCRIPT_DIR, "data", platform_key)
@@ -77,6 +77,7 @@ def build_vendor(platform_key, platform_config, output_path):
         output_path=output_path,
         compress_type=platform_config["archiveType"],
         build_app=platform_config.get("buildApp", "apps/tuya_cloud/switch_demo"),
+        cache_path=cache_path,
     )
 
     cls = PLATFORM_CLASSES.get(platform_key)
@@ -126,6 +127,7 @@ def main():
     config = load_config()
     output_path = args.output or os.path.join(SCRIPT_DIR, "output", args.version)
     os.makedirs(output_path, exist_ok=True)
+    cache_path = os.path.join(SCRIPT_DIR, "output", "cache")
 
     manifest = {"version": args.version, "artifacts": []}
     failed = False
@@ -149,7 +151,7 @@ def main():
             result = build_arduino(args.version, checkout, output_path)
         else:
             platform_config = config["platforms"][target]
-            result = build_vendor(target, platform_config, output_path)
+            result = build_vendor(target, platform_config, output_path, cache_path)
 
         if result:
             manifest["artifacts"].append(result)
