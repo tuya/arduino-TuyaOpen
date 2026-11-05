@@ -31,7 +31,7 @@
       "archiveType": "tar.bz2"
     },
     "t5": {
-      "enabled": true,
+      "enabled": false,
       "toolName": "vendor-T5",
       "boardName": "t5",
       "chip": "T5AI",
@@ -53,11 +53,11 @@
       "archiveType": "tar.bz2"
     },
     "esp32": {
-      "enabled": false,
+      "enabled": true,
       "toolName": "vendor-esp32",
       "boardName": "esp32",
       "chip": "esp32",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "sourceRepo": "https://github.com/tuya/tuyaopen.git",
       "sourceBranch": "master",
       "buildApp": "apps/tuya_cloud/switch_demo",

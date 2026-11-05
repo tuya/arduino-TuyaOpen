@@ -33,9 +33,9 @@ def make_download_url(owner, repo, tag, filename):
     return f"https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}"
 
 
-def find_artifact(manifest, name_prefix):
+def find_artifact(manifest, expected_name):
     for artifact in manifest.get("artifacts", []):
-        if artifact["name"].startswith(name_prefix):
+        if artifact["name"] == expected_name:
             return artifact
     return None
 
@@ -76,18 +76,16 @@ def generate_index(base_index, manifest, config, version, owner, repo):
     new_platform = copy.deepcopy(latest_platform)
     new_platform["version"] = version
 
-    arduino_artifact = find_artifact(manifest, "arduino_tuya_open-")
-    if arduino_artifact:
-        arduino_filename = arduino_artifact["name"]
-        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename)
-        new_platform["archiveFileName"] = arduino_filename
-        new_platform["size"] = arduino_artifact["size"]
-        new_platform["checksum"] = arduino_artifact["checksum"]
-    else:
-        arduino_filename = f"arduino_tuya_open-{version}.zip"
-        new_platform["url"] = make_download_url(owner, repo, version, arduino_filename)
-        new_platform["archiveFileName"] = arduino_filename
-        logging.warning("Arduino artifact not in manifest, URL updated but size/checksum unchanged")
+    arduino_filename = f"arduino_tuya_open-{version}.zip"
+    arduino_artifact = find_artifact(manifest, arduino_filename)
+    if not arduino_artifact:
+        logging.error(f"Arduino artifact {arduino_filename} not found in manifest")
+        return None
+
+    new_platform["url"] = make_download_url(owner, repo, version, arduino_filename)
+    new_platform["archiveFileName"] = arduino_filename
+    new_platform["size"] = arduino_artifact["size"]
+    new_platform["checksum"] = arduino_artifact["checksum"]
 
     existing_boards = {b["name"] for b in new_platform.get("boards", [])}
     for _, plat_config in config["platforms"].items():
@@ -145,11 +143,8 @@ def generate_index(base_index, manifest, config, version, owner, repo):
 
         tool_key = (tool_name.lower(), tool_version)
 
-        vendor_artifact = find_artifact(manifest, f"{tool_name}-{tool_version}")
+        vendor_artifact = find_artifact(manifest, archive_filename)
         if not vendor_artifact:
-            if tool_key in existing_tools:
-                logging.info(f"Tool {tool_name} {tool_version} already in index, no new artifact")
-                continue
             logging.error(
                 f"Enabled vendor artifact {archive_filename} not found in manifest. "
                 f"Cannot generate index with missing artifacts."

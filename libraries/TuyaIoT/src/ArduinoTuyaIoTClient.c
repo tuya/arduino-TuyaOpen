@@ -75,7 +75,12 @@ void app_iot_task_start(const char *pid, const char *version)
     sg_softwareVersion = version;
     sg_productID       = pid;
 
-    THREAD_CFG_T thrd_param = {8 * 1024, THREAD_PRIO_1, "iot_task"};
+    THREAD_CFG_T thrd_param = {
+        .stackDepth = 8 * 1024,
+        .priority   = THREAD_PRIO_1,
+        .thrdname   = "iot_task",
+        .psram_mode = 0,
+    };
     tal_thread_create_and_start(&iot_thread, NULL, NULL, tuya_app_thread, NULL, &thrd_param);
     return;
 }
