@@ -79,7 +79,9 @@ void app_iot_task_start(const char *pid, const char *version)
         .stackDepth = 8 * 1024,
         .priority   = THREAD_PRIO_1,
         .thrdname   = "iot_task",
+#if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_esp32)
         .psram_mode = 0,
+#endif
     };
     tal_thread_create_and_start(&iot_thread, NULL, NULL, tuya_app_thread, NULL, &thrd_param);
     return;
