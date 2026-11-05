@@ -76,32 +76,30 @@ class PackagePlatform:
 
         work_dir = self.build_app_path
 
-        try:
-            subprocess.run(
-                ["python", tos, "clean", "-f"],
-                cwd=work_dir,
-                capture_output=True,
-                text=True,
-                timeout=60,
-            )
-            logging.info("Build cache cleaned")
-        except Exception as e:
-            logging.warning(f"Clean failed: {e}, continuing")
-
         build_lines = []
         try:
             process = subprocess.Popen(
-                ["python", tos, "build"],
+                [
+                    "bash",
+                    "-c",
+                    'source "$1/export.sh" || exit $?; '
+                    '"$OPEN_SDK_PYTHON" "$1/tos.py" clean -f || true; '
+                    'exec "$OPEN_SDK_PYTHON" "$1/tos.py" build',
+                    "package-platform-build",
+                    self.clone_path,
+                ],
                 cwd=work_dir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
             )
-            for line in process.stdout:
-                build_lines.append(line.rstrip())
-                logging.debug(f"[BUILD] {line.rstrip()}")
+            with process.stdout:
+                for line in process.stdout:
+                    build_lines.append(line.rstrip())
+                    logging.debug(f"[BUILD] {line.rstrip()}")
             process.wait()
+            logging.info("Build cache cleaned")
 
             if process.returncode != 0:
                 logging.error(f"Build failed with return code: {process.returncode}")
