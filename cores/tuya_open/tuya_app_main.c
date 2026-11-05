@@ -125,7 +125,9 @@ void tuya_app_main(void)
         .stackDepth = 1024 * 4, // Increased stack size for C++
         .priority   = THREAD_PRIO_1,
         .thrdname   = thread_name,
+#if defined(ARDUINO_CHIP_T5) || defined(ARDUINO_CHIP_esp32)
         .psram_mode = 0,
+#endif
     };
     tal_thread_create_and_start(&arduino_thrd_hdl, NULL, NULL, ArduinoThread, NULL, &thrd_param);
 }

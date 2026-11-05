@@ -381,13 +381,15 @@ jobs:
 
       - name: Install tuya_open core from test index
         run: |
+          $logDir = Join-Path $env:RUNNER_TEMP "arduino-cli-logs"
+          New-Item -ItemType Directory -Force -Path $logDir | Out-Null
           $pkgJson = (Resolve-Path "package_tuya_open_index.json").Path -replace '\\','/'
           $pkgUrl = "file:///$pkgJson"
-          arduino-cli config init --overwrite 2>&1 | Out-Null
+          arduino-cli config init --overwrite 2>&1 | Tee-Object -FilePath (Join-Path $logDir "config-init.log")
           arduino-cli config add board_manager.additional_urls $pkgUrl
-          arduino-cli core update-index 2>&1 | Out-Null
+          arduino-cli core update-index 2>&1 | Tee-Object -FilePath (Join-Path $logDir "core-update-index.log")
           if ($LASTEXITCODE -ne 0) { Write-Error "Failed to update core index."; exit 1 }
-          arduino-cli core install tuya_open:tuya_open 2>&1 | Out-Null
+          arduino-cli core install tuya_open:tuya_open 2>&1 | Tee-Object -FilePath (Join-Path $logDir "core-install.log")
           if ($LASTEXITCODE -ne 0) { Write-Error "Failed to install tuya_open core."; exit 1 }
           $installedStr = (arduino-cli core list) -join "`n"
           if ($installedStr -notmatch 'tuya_open') { Write-Error "tuya_open core not found."; exit 1 }
@@ -401,12 +403,17 @@ jobs:
           $total = $sketches.Count
           $failed = @()
           $failedLogs = @{}
+          $logDir = Join-Path $env:RUNNER_TEMP "arduino-cli-logs"
+          New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+          $compileLog = Join-Path $logDir "compile-sketches.log"
           $i = 0
           foreach ($sketch in $sketches) {
             $i++
             echo "[$i/$total] Compiling: $sketch"
             $output = arduino-cli compile --clean --fqbn $fqbn $sketch 2>&1
-            if ($LASTEXITCODE -ne 0) {
+            $compileExitCode = $LASTEXITCODE
+            $output | Out-File -FilePath $compileLog -Append -Encoding utf8
+            if ($compileExitCode -ne 0) {
               $failed += $sketch
               $failedLogs[$sketch] = $output -join "`n"
               echo "::error::Compilation failed: $sketch"
@@ -423,6 +430,15 @@ jobs:
           }
           echo "All $total sketch(es) compiled successfully for ${{ matrix.board }}"
         shell: pwsh
+
+      - name: Upload Arduino CLI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: arduino-cli-diagnostics-${{ matrix.board }}
+          path: ${{ runner.temp }}/arduino-cli-logs/
+          if-no-files-found: warn
+          retention-days: 14
 
   # ============================================================
   # Stage 7: Upload index to version release
