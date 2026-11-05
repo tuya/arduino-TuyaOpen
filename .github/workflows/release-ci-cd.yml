@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-index-${{ github.repository }}
+  queue: max
+
 env:
   ARDUINO_CLI_VERSION: "1.2.2"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -59,10 +63,7 @@ jobs:
             --repo "${OWNER}/${REPO}" \
             --pattern "$INDEX_NAME" \
             --output global_index.json \
-            --clobber || {
-              echo "::warning::Could not download global index, will use package.json as fallback"
-              cp package.json global_index.json
-            }
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -263,6 +264,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Test package index guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_*.py' -v
+
       - name: Download global index
         uses: actions/download-artifact@v5
         with:
@@ -296,7 +300,9 @@ jobs:
           python tools/ci/validate_index.py \
             --index package_tuya_open_index.json \
             --version "$TAG" \
-            --manifest manifest.json
+            --manifest manifest.json \
+            --base-index global_index.json \
+            --config tools/ci/package-config.json
 
       - name: Upload test index
         uses: actions/upload-artifact@v5
@@ -476,12 +482,45 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload and verify index on global release
+        id: global_index
+        run: |
+          OWNER=$(jq -r '.package.githubOwner' tools/ci/package-config.json)
+          REPO=$(jq -r '.package.githubRepo' tools/ci/package-config.json)
+          GLOBAL_TAG=$(jq -r '.package.globalReleaseTag' tools/ci/package-config.json)
+          INDEX_NAME=$(jq -r '.package.indexAssetName' tools/ci/package-config.json)
+
+          echo "Uploading ${INDEX_NAME} to global release ${GLOBAL_TAG}..."
+          gh release upload "$GLOBAL_TAG" \
+            "package_tuya_open_index.json#${INDEX_NAME}" \
+            --repo "${OWNER}/${REPO}" \
+            --clobber
+
+          gh release download "$GLOBAL_TAG" \
+            --repo "${OWNER}/${REPO}" \
+            --pattern "$INDEX_NAME" \
+            --output verify_global_index.json \
+            --clobber
+
+          REMOTE_SHA256=$(sha256sum verify_global_index.json | cut -d' ' -f1)
+          LOCAL_SHA256="${{ steps.checksum.outputs.local_sha256 }}"
+
+          if [ "$REMOTE_SHA256" = "$LOCAL_SHA256" ]; then
+            echo "Global index verification passed (SHA-256: $REMOTE_SHA256)"
+          else
+            echo "::error::Global index verification FAILED! Local=$LOCAL_SHA256, Remote=$REMOTE_SHA256"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Workflow summary
         if: always()
         run: |
           TAG="${{ needs.prepare.outputs.release_tag }}"
           OWNER=$(jq -r '.package.githubOwner' tools/ci/package-config.json)
           REPO=$(jq -r '.package.githubRepo' tools/ci/package-config.json)
+          INDEX_NAME=$(jq -r '.package.indexAssetName' tools/ci/package-config.json)
 
           cat >> "$GITHUB_STEP_SUMMARY" << EOF
           ## Release CI/CD Summary
@@ -494,7 +533,12 @@ jobs:
 
           ### Package index
           - SHA-256: \`${{ steps.checksum.outputs.local_sha256 }}\`
-          - To publish globally, manually upload \`${INDEX_NAME}\` from release \`${TAG}\` to the \`global\` release.
           EOF
+
+          if [ "${{ steps.global_index.outcome }}" = "success" ]; then
+            echo "- Uploaded and verified \`${INDEX_NAME}\` on the \`global\` release." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Global upload or verification of \`${INDEX_NAME}\` did not complete successfully." >> "$GITHUB_STEP_SUMMARY"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
